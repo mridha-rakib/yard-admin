@@ -1,25 +1,47 @@
-import { Checkbox, Form, Input, Typography } from "antd";
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { Checkbox, Form, Input, Typography, message } from "antd";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import brandlogo from "../../../assets/image/logo_yard.png";
+import { useAuthStore } from "../../../stores/use-auth-store";
 
 const SignIn = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showpassword, setShowpassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const login = useAuthStore((state) => state.login);
+  const logout = useAuthStore((state) => state.logout);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
+  const loading = useAuthStore((state) => state.isInitializing);
 
   const togglePasswordVisibility = () => {
     setShowpassword(!showpassword)
   };
 
-  const onFinish = (values) => {
-    setLoading(true);
-    // Simulating login without actual API call
-    setTimeout(() => {
-      setLoading(false);
-      navigate("/dashboard");
-    }, 1500);
+  useEffect(() => {
+    if (isAuthenticated && user?.role === "admin") {
+      navigate(location.state?.from?.pathname || "/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, location.state, navigate, user]);
+
+  const onFinish = async (values) => {
+    try {
+      const session = await login(values);
+
+      if (session.user?.role !== "admin") {
+        await logout();
+        message.error("This account does not have admin access.");
+        return;
+      }
+
+      message.success("Signed in successfully.");
+      navigate(location.state?.from?.pathname || "/dashboard", { replace: true });
+    } catch (error) {
+      message.error(
+        error?.response?.data?.message || "Unable to sign in. Please try again."
+      );
+    }
   };
 
   return (
@@ -42,9 +64,15 @@ const SignIn = () => {
                   Please enter your email and password to continue
                 </Typography.Text>
               </div>
-              <Form.Item name="email" label={<p className=" text-md">Email</p>}>
+              <Form.Item
+                name="email"
+                label={<p className=" text-md">Email</p>}
+                rules={[
+                  { required: true, message: "Email is required" },
+                  { type: "email", message: "Enter a valid email address" },
+                ]}
+              >
                 <Input
-                  // required
                   className=" text-md"
                   placeholder="Your Email"
                 />
@@ -52,12 +80,12 @@ const SignIn = () => {
               <Form.Item
                 name="password"
                 label={<p className=" text-md">Password</p>}
+                rules={[{ required: true, message: "Password is required" }]}
               >
                 <div className="relative flex items-center justify-center">
                   <Input
-                    // required
                     className=" text-md"
-                    type={showpassword ? "password" : "text"}
+                    type={showpassword ? "text" : "password"}
                     placeholder="Password"
                   />
                   <div className="absolute right-0 flex justify-center px-3">
@@ -89,7 +117,7 @@ const SignIn = () => {
                   type="submit"
                   disabled={loading}
                 >
-                  Sign in
+                  {loading ? "Signing in..." : "Sign in"}
                 </button>
               </Form.Item>
             </Form>

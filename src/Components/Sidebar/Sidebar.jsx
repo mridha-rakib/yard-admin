@@ -1,23 +1,23 @@
 import { FiLogOut } from "react-icons/fi";
 import { BiChevronDown } from "react-icons/bi";
-import { Link, useLocation } from "react-router-dom";
-import { MdDashboard } from "react-icons/md";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import brandlogo from "../../assets/image/yard_logo.png";
 import {
   AlignCenterVertical,
   ChartColumnIncreasing,
   Crown,
   Settings,
-  TriangleAlert,
   Users,
 } from "lucide-react";
 import { BsBadgeAd } from "react-icons/bs";
-import { SiActivitypub } from "react-icons/si";
 import { RiDashboardHorizontalLine } from "react-icons/ri";
-
+import { useAuthStore } from "../../stores/use-auth-store";
 
 const Sidebar = ({ closeDrawer }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const logout = useAuthStore((state) => state.logout);
+  const isInitializing = useAuthStore((state) => state.isInitializing);
 
   const menuItems = [
     {
@@ -58,7 +58,12 @@ const Sidebar = ({ closeDrawer }) => {
     },
   ];
 
-  
+  const handleLogout = async () => {
+    await logout();
+    closeDrawer?.();
+    navigate("/sign-in", { replace: true });
+  };
+
   return (
     <div className="w-72  bg-[#0a3019]  h-full">
       <div className="border-b-2 border-[#166534]">
@@ -80,7 +85,7 @@ const Sidebar = ({ closeDrawer }) => {
                     : "text-white"
                 }`}
               >
-                <Link to={item.Link} className="flex items-center gap-3">
+                <Link to={item.Link} onClick={() => closeDrawer?.()} className="flex items-center gap-3">
                   {item.icon}
                   <p>{item.label}</p>
                   {item.isDropdown && (
@@ -96,12 +101,15 @@ const Sidebar = ({ closeDrawer }) => {
       </div>
 
       <div className="mt-60">
-        <Link to="/sign-in">
-          <div className="flex items-center justify-center w-full py-3 text-xl text-white rounded-lg cursor-pointer gap-x-5">
-            <FiLogOut className="text-xl" />
-            <p>Log out</p>
-          </div>
-        </Link>
+        <button
+          type="button"
+          onClick={handleLogout}
+          disabled={isInitializing}
+          className="flex items-center justify-center w-full py-3 text-xl text-white rounded-lg cursor-pointer gap-x-5 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <FiLogOut className="text-xl" />
+          <p>{isInitializing ? "Logging out..." : "Log out"}</p>
+        </button>
       </div>
     </div>
   );
