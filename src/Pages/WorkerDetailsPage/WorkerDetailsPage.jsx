@@ -1,63 +1,140 @@
-import React from 'react';
-import { ChevronLeft, CheckCircle, XCircle, Pause, Play } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { message } from "antd";
+import { ChevronLeft, CheckCircle, XCircle, Pause, Play } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
+import { adminApi } from "../../lib/api/admin-api";
+import { getApiErrorMessage } from "../../lib/api/http";
+import {
+  formatAccountStatus,
+  formatAvailability,
+  formatDate,
+  formatFullAddress,
+  formatWorkerStatus,
+  getAccountStatusClasses,
+  getWorkerStatusClasses,
+} from "../../lib/workers";
 
 export default function WorkerDetailsPage() {
-  // In a real app, you would fetch this data based on the worker ID from the URL
-  const workerData = {
-    id: 1,
-    name: 'Michael David Thompson',
-    email: 'michael.thompson@email.com',
-    phone: '+1 (555) 123-4567',
-    address: '1234 Oak Street, Austin, TX 78701',
-    dateOfBirth: 'March 15, 1985',
-    emergencyContact: 'Sarah Thompson - (555) 987-6543',
-    skills: ['Lawn Mowing', 'Tree Trimming', 'Landscaping', 'Garden Design'],
-    experienceLevel: '10 Years Professional',
-    serviceRadius: '25 miles',
-    weekSchedule: {
-      Mon: '8AM-6PM',
-      Tue: '8AM-6PM',
-      Wed: '8AM-6PM',
-      Thu: '8AM-6PM',
-      Fri: '8AM-6PM',
-      Sat: '8AM-3PM',
-      Sun: 'Unavailable'
-    },
-    profilePhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop',
-    applicationDate: 'December 15, 2023',
-    backgroundCheck: { status: 'Passed', date: 'Dec 18, 2023' },
-    references: [
-      { name: 'John Smith - Previous Employer', phone: '(555) 234-5678', verified: true },
-      { name: 'Lisa Johnson - Client Reference', phone: '(555) 345-6789', verified: true }
-    ],
-    status: 'Pending'
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const [worker, setWorker] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let ignore = false;
+
+    const loadWorker = async () => {
+      setIsLoading(true);
+      setError("");
+
+      try {
+        const data = await adminApi.getWorkerById(id);
+
+        if (!ignore) {
+          setWorker(data);
+        }
+      } catch (apiError) {
+        if (!ignore) {
+          setError(getApiErrorMessage(apiError));
+        }
+      } finally {
+        if (!ignore) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadWorker();
+
+    return () => {
+      ignore = true;
+    };
+  }, [id]);
+
+  const handleAction = async (action) => {
+    if (!worker?._id) {
+      return;
+    }
+
+    setActionLoading(action);
+
+    try {
+      let updatedWorker = null;
+      let successMessage = "Worker updated successfully.";
+
+      if (action === "approve") {
+        updatedWorker = await adminApi.approveWorker(worker._id);
+        successMessage = "Worker approved successfully.";
+      }
+
+      if (action === "reject") {
+        updatedWorker = await adminApi.rejectWorker(worker._id);
+        successMessage = "Worker rejected successfully.";
+      }
+
+      if (action === "suspend") {
+        updatedWorker = await adminApi.updateWorkerAccountStatus(worker._id, "suspended");
+        successMessage = "Worker suspended successfully.";
+      }
+
+      if (action === "reactivate") {
+        updatedWorker = await adminApi.updateWorkerAccountStatus(worker._id, "active");
+        successMessage = "Worker reactivated successfully.";
+      }
+
+      if (updatedWorker) {
+        setWorker(updatedWorker);
+        message.success(successMessage);
+      }
+    } catch (apiError) {
+      message.error(getApiErrorMessage(apiError));
+    } finally {
+      setActionLoading("");
+    }
   };
 
   const handleBack = () => {
-    // In a real app: navigate(-1) or navigate('/workers')
-    alert('Navigate back to workers table');
+    navigate("/workers");
   };
 
-  const handleApprove = () => {
-    alert('Approve worker action');
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen p-6 mt-16 bg-gray-50">
+        <div className="p-10 text-center text-gray-500 bg-white rounded-lg shadow-sm">
+          Loading worker details...
+        </div>
+      </div>
+    );
+  }
 
-  const handleReject = () => {
-    alert('Reject application action');
-  };
+  if (error || !worker) {
+    return (
+      <div className="min-h-screen p-6 mt-16 bg-gray-50">
+        <button
+          onClick={handleBack}
+          className="flex items-center gap-2 mb-6 text-gray-600 transition hover:text-gray-900"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to Workers
+        </button>
+        <div className="p-10 text-center text-red-600 bg-white rounded-lg shadow-sm">
+          {error || "Worker not found."}
+        </div>
+      </div>
+    );
+  }
 
-  const handleSuspend = () => {
-    alert('Suspend worker action');
-  };
-
-  const handleReactivate = () => {
-    alert('Reactivate worker action');
-  };
+  const canApprove = worker.workerStatus !== "approved";
+  const canReject = worker.workerStatus !== "rejected";
+  const canSuspend = worker.status === "active";
+  const canReactivate = worker.status === "suspended" || worker.status === "inactive";
 
   return (
     <div className="min-h-screen p-6 mt-16 bg-gray-50">
       <div className="mx-auto">
-        <button 
+        <button
           onClick={handleBack}
           className="flex items-center gap-2 mb-6 text-gray-600 transition hover:text-gray-900"
         >
@@ -66,178 +143,236 @@ export default function WorkerDetailsPage() {
         </button>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* Left Column - 2/3 width */}
           <div className="space-y-6 lg:col-span-2">
-            {/* Personal Information */}
             <div className="p-6 bg-white rounded-lg shadow-sm">
               <h2 className="mb-4 text-lg font-bold text-gray-900">Personal Information</h2>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <label className="block mb-1 text-xs text-gray-500">Full Name</label>
-                  <span className="text-sm text-gray-900">{workerData.name}</span>
+                  <span className="text-sm text-gray-900">{worker.name}</span>
                 </div>
                 <div>
                   <label className="block mb-1 text-xs text-gray-500">Email</label>
-                  <span className="text-sm text-gray-900">{workerData.email}</span>
+                  <span className="text-sm text-gray-900">{worker.email}</span>
                 </div>
                 <div>
                   <label className="block mb-1 text-xs text-gray-500">Phone</label>
-                  <span className="text-sm text-gray-900">{workerData.phone}</span>
+                  <span className="text-sm text-gray-900">{worker.phone}</span>
                 </div>
                 <div>
-                  <label className="block mb-1 text-xs text-gray-500">Date of Birth</label>
-                  <span className="text-sm text-gray-900">{workerData.dateOfBirth}</span>
+                  <label className="block mb-1 text-xs text-gray-500">Age</label>
+                  <span className="text-sm text-gray-900">{worker.age || "Not provided"}</span>
                 </div>
                 <div>
                   <label className="block mb-1 text-xs text-gray-500">Address</label>
-                  <span className="text-sm text-gray-900">{workerData.address}</span>
+                  <span className="text-sm text-gray-900">
+                    {formatFullAddress(worker.location)}
+                  </span>
                 </div>
                 <div>
-                  <label className="block mb-1 text-xs text-gray-500">Emergency Contact</label>
-                  <span className="text-sm text-gray-900">{workerData.emergencyContact}</span>
+                  <label className="block mb-1 text-xs text-gray-500">Last Login</label>
+                  <span className="text-sm text-gray-900">
+                    {formatDate(worker.lastLoginAt)}
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* Skills & Availability */}
             <div className="p-6 bg-white rounded-lg shadow-sm">
               <h2 className="mb-4 text-lg font-bold text-gray-900">Skills & Availability</h2>
               <div className="space-y-4">
                 <div>
                   <label className="block mb-2 text-xs text-gray-500">Services Offered</label>
                   <div className="flex flex-wrap gap-2">
-                    {workerData.skills.map((skill, index) => (
-                      <span key={index} className="px-3 py-1.5 rounded-full text-xs font-medium bg-gray-900 text-white">
-                        {skill}
-                      </span>
-                    ))}
+                    {(worker.skills || []).length ? (
+                      worker.skills.map((skill) => (
+                        <span
+                          key={skill}
+                          className="px-3 py-1.5 rounded-full text-xs font-medium bg-gray-900 text-white"
+                        >
+                          {skill}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-sm text-gray-500">No skills listed</span>
+                    )}
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block mb-1 text-xs text-gray-500">Experience Level</label>
-                    <span className="text-sm text-gray-900">{workerData.experienceLevel}</span>
+                    <label className="block mb-1 text-xs text-gray-500">Availability</label>
+                    <span className="text-sm text-gray-900">
+                      {formatAvailability(worker.availability)}
+                    </span>
                   </div>
                   <div>
-                    <label className="block mb-1 text-xs text-gray-500">Service Radius</label>
-                    <span className="text-sm text-gray-900">{workerData.serviceRadius}</span>
+                    <label className="block mb-1 text-xs text-gray-500">Available Days</label>
+                    <span className="text-sm text-gray-900">
+                      {worker.availability?.days?.length
+                        ? worker.availability.days.join(", ")
+                        : "Not provided"}
+                    </span>
                   </div>
-                </div>
-                <div>
-                  <label className="block mb-2 text-xs text-gray-500">Availability</label>
-                  <div className="grid grid-cols-7 gap-2">
-                    {Object.entries(workerData.weekSchedule).map(([day, time]) => (
-                      <div key={day} className="text-center">
-                        <div className="mb-1 text-xs font-medium text-gray-700">{day}</div>
-                        <div className={`text-xs px-2 py-1.5 rounded ${time === 'Unavailable' ? 'bg-gray-100 text-gray-500' : 'bg-green-100 text-green-700'}`}>
-                          {time}
-                        </div>
-                      </div>
-                    ))}
+                  <div>
+                    <label className="block mb-1 text-xs text-gray-500">Start Time</label>
+                    <span className="text-sm text-gray-900">
+                      {worker.availability?.startTime || "Not provided"}
+                    </span>
+                  </div>
+                  <div>
+                    <label className="block mb-1 text-xs text-gray-500">End Time</label>
+                    <span className="text-sm text-gray-900">
+                      {worker.availability?.endTime || "Not provided"}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Uploaded Documents */}
             <div className="p-6 bg-white rounded-lg shadow-sm">
               <h2 className="mb-4 text-lg font-bold text-gray-900">Uploaded Documents</h2>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-700">Profile Photo</span>
-                    <button className="text-xs text-blue-600 hover:text-blue-700">View</button>
+                    {worker.profilePhotoUrl ? (
+                      <a
+                        href={worker.profilePhotoUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs text-blue-600 hover:text-blue-700"
+                      >
+                        View
+                      </a>
+                    ) : null}
                   </div>
-                  <div className="overflow-hidden bg-gray-100 rounded-lg aspect-video">
-                    <img src={workerData.profilePhoto} alt="Profile" className="object-cover w-full h-full" />
+                  <div className="flex items-center justify-center overflow-hidden bg-gray-100 rounded-lg aspect-video">
+                    {worker.profilePhotoUrl ? (
+                      <img
+                        src={worker.profilePhotoUrl}
+                        alt={worker.name}
+                        className="object-cover w-full h-full"
+                      />
+                    ) : (
+                      <span className="text-sm text-gray-500">No profile photo uploaded</span>
+                    )}
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">Uploaded: Dec 15, 2023</p>
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-700">Government ID</span>
-                    <button className="text-xs text-blue-600 hover:text-blue-700">View</button>
+                    {worker.idDocumentUrl ? (
+                      <a
+                        href={worker.idDocumentUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs text-blue-600 hover:text-blue-700"
+                      >
+                        View
+                      </a>
+                    ) : null}
                   </div>
                   <div className="flex items-center justify-center overflow-hidden bg-gray-100 rounded-lg aspect-video">
-                    <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <rect x="3" y="6" width="18" height="12" rx="2" strokeWidth="2"/>
-                      <path d="M3 10h18" strokeWidth="2"/>
-                    </svg>
-                  </div>
-                  <p className="mt-1 text-xs text-gray-500">Uploaded: Dec 15, 2023</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Application Summary */}
-            <div className="p-6 bg-white rounded-lg shadow-sm">
-              <h2 className="mb-4 text-lg font-bold text-gray-900">Application Summary</h2>
-              <div className="space-y-3">
-                <div>
-                  <label className="block mb-1 text-xs text-gray-500">Application Date</label>
-                  <span className="text-sm text-gray-900">{workerData.applicationDate}</span>
-                </div>
-                <div>
-                  <label className="block mb-1 text-xs text-gray-500">Background Check</label>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    <span className="text-sm font-medium text-green-700">{workerData.backgroundCheck.status}</span>
-                    <span className="text-xs text-gray-500">- Completed on {workerData.backgroundCheck.date}</span>
-                  </div>
-                </div>
-                <div>
-                  <label className="block mb-2 text-xs text-gray-500">References</label>
-                  <div className="space-y-2">
-                    {workerData.references.map((ref, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                        <div>
-                          <div className="text-sm text-gray-900">{ref.name}</div>
-                          <div className="text-xs text-gray-500">{ref.phone}</div>
-                        </div>
-                        <span className={`text-xs font-medium ${ref.verified ? 'text-green-600' : 'text-gray-500'}`}>
-                          {ref.verified ? 'Verified' : 'Pending'}
-                        </span>
+                    {worker.idDocumentUrl ? (
+                      <div className="px-6 text-sm text-center text-gray-700">
+                        Document uploaded. Use the View link to open it.
                       </div>
-                    ))}
+                    ) : (
+                      <span className="text-sm text-gray-500">No ID document uploaded</span>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column - 1/3 width */}
           <div className="lg:col-span-1">
-            <div className="sticky p-6 bg-white rounded-lg shadow-sm top-6">
-              <h2 className="mb-4 text-lg font-bold text-gray-900">Admin Actions</h2>
-              <div className="space-y-3">
-                <button 
-                  onClick={handleApprove}
-                  className="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  Approve Worker
-                </button>
-                <button 
-                  onClick={handleReject}
-                  className="w-full px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition"
-                >
-                  <XCircle className="w-4 h-4" />
-                  Reject Application
-                </button>
-                <button 
-                  onClick={handleSuspend}
-                  className="w-full px-4 py-2.5 border border-gray-300 bg-white hover:bg-gray-50 text-gray-900 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition"
-                >
-                  <Pause className="w-4 h-4" />
-                  Suspend Worker
-                </button>
-                <button 
-                  onClick={handleReactivate}
-                  className="w-full px-4 py-2.5 border border-gray-300 bg-white hover:bg-gray-50 text-gray-900 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition"
-                >
-                  <Play className="w-4 h-4" />
-                  Reactivate Worker
-                </button>
+            <div className="sticky p-6 space-y-6 bg-white rounded-lg shadow-sm top-6">
+              <div>
+                <h2 className="mb-4 text-lg font-bold text-gray-900">Worker Overview</h2>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block mb-1 text-xs text-gray-500">Application Status</label>
+                    <span
+                      className={`inline-flex px-2.5 py-1 rounded-md text-xs font-medium ${getWorkerStatusClasses(
+                        worker.workerStatus
+                      )}`}
+                    >
+                      {formatWorkerStatus(worker.workerStatus)}
+                    </span>
+                  </div>
+                  <div>
+                    <label className="block mb-1 text-xs text-gray-500">Account Status</label>
+                    <span
+                      className={`inline-flex px-2.5 py-1 rounded-md text-xs font-medium ${getAccountStatusClasses(
+                        worker.status
+                      )}`}
+                    >
+                      {formatAccountStatus(worker.status)}
+                    </span>
+                  </div>
+                  <div>
+                    <label className="block mb-1 text-xs text-gray-500">Applied On</label>
+                    <span className="text-sm text-gray-900">{formatDate(worker.createdAt)}</span>
+                  </div>
+                  <div>
+                    <label className="block mb-1 text-xs text-gray-500">Updated On</label>
+                    <span className="text-sm text-gray-900">{formatDate(worker.updatedAt)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="mb-4 text-lg font-bold text-gray-900">Admin Actions</h2>
+                <div className="space-y-3">
+                  {canApprove ? (
+                    <button
+                      onClick={() => handleAction("approve")}
+                      disabled={Boolean(actionLoading)}
+                      className="flex items-center justify-center w-full gap-2 px-4 py-2.5 text-sm font-medium text-white transition bg-green-600 rounded-lg hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      {actionLoading === "approve" ? "Approving..." : "Approve Worker"}
+                    </button>
+                  ) : null}
+
+                  {canReject ? (
+                    <button
+                      onClick={() => handleAction("reject")}
+                      disabled={Boolean(actionLoading)}
+                      className="flex items-center justify-center w-full gap-2 px-4 py-2.5 text-sm font-medium text-white transition bg-red-600 rounded-lg hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      <XCircle className="w-4 h-4" />
+                      {actionLoading === "reject" ? "Rejecting..." : "Reject Worker"}
+                    </button>
+                  ) : null}
+
+                  {canSuspend ? (
+                    <button
+                      onClick={() => handleAction("suspend")}
+                      disabled={Boolean(actionLoading)}
+                      className="flex items-center justify-center w-full gap-2 px-4 py-2.5 text-sm font-medium text-gray-900 transition bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      <Pause className="w-4 h-4" />
+                      {actionLoading === "suspend" ? "Suspending..." : "Suspend Worker"}
+                    </button>
+                  ) : null}
+
+                  {canReactivate ? (
+                    <button
+                      onClick={() => handleAction("reactivate")}
+                      disabled={Boolean(actionLoading)}
+                      className="flex items-center justify-center w-full gap-2 px-4 py-2.5 text-sm font-medium text-gray-900 transition bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      <Play className="w-4 h-4" />
+                      {actionLoading === "reactivate" ? "Reactivating..." : "Reactivate Worker"}
+                    </button>
+                  ) : null}
+
+                  {!canApprove && !canReject && !canSuspend && !canReactivate ? (
+                    <div className="text-sm text-gray-500">No actions available for this worker.</div>
+                  ) : null}
+                </div>
               </div>
             </div>
           </div>
