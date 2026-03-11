@@ -6,6 +6,7 @@ import {
   AlignCenterVertical,
   ChartColumnIncreasing,
   Crown,
+  DollarSign,
   Settings,
   Users,
 } from "lucide-react";
@@ -45,6 +46,11 @@ const Sidebar = ({ closeDrawer }) => {
       icon: <BsBadgeAd className="w-5 h-5"/>,
       label: "Customers",
       Link: "/customers",
+    },
+    {
+      icon: <DollarSign className="w-5 h-5" />,
+      label: "Pricing",
+      Link: "/pricing",
     },
     {
       icon: <AlignCenterVertical className="w-5 h-5"/>,

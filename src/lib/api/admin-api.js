@@ -25,4 +25,6 @@ export const adminApi = {
     apiClient
       .patch(`/admin/workers/${workerId}/account-status`, { status })
       .then(unwrapData),
+  getContentByKey: (key) => apiClient.get(`/content/${key}`).then(unwrapData),
+  upsertContent: (key, payload) => apiClient.patch(`/content/${key}`, payload).then(unwrapData),
 };
