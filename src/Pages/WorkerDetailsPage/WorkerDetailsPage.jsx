@@ -4,6 +4,7 @@ import { ChevronLeft, CheckCircle, XCircle, Pause, Play } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { adminApi } from "../../lib/api/admin-api";
 import { getApiErrorMessage } from "../../lib/api/http";
+import { formatTime } from "../../lib/time";
 import {
   formatAccountStatus,
   formatAvailability,
@@ -216,13 +217,13 @@ export default function WorkerDetailsPage() {
                   <div>
                     <label className="block mb-1 text-xs text-gray-500">Start Time</label>
                     <span className="text-sm text-gray-900">
-                      {worker.availability?.startTime || "Not provided"}
+                      {formatTime(worker.availability?.startTime) || "Not provided"}
                     </span>
                   </div>
                   <div>
                     <label className="block mb-1 text-xs text-gray-500">End Time</label>
                     <span className="text-sm text-gray-900">
-                      {worker.availability?.endTime || "Not provided"}
+                      {formatTime(worker.availability?.endTime) || "Not provided"}
                     </span>
                   </div>
                 </div>

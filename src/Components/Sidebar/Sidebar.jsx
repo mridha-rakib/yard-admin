@@ -25,42 +25,50 @@ const Sidebar = ({ closeDrawer }) => {
       icon: <RiDashboardHorizontalLine className="w-5 h-5" />,
       label: "Dashboard",
       Link: "/",
+      matchPaths: ["/", "/dashboard"],
     },
     {
       icon: <Users className="w-5 h-5" />,
       label: "Bookings",
       Link: "/booking",
+      matchPaths: ["/booking"],
     },
     {
       icon: <ChartColumnIncreasing className="w-5 h-5" />,
       label: "Workers",
       Link: "/workers",
+      matchPaths: ["/workers"],
     },
     {
       icon: <Crown className="w-5 h-5" />,
       label: "Payments",
       Link: "/payments",
+      matchPaths: ["/payments", "/payment-details"],
     },
 
     {
       icon: <BsBadgeAd className="w-5 h-5"/>,
       label: "Customers",
       Link: "/customers",
+      matchPaths: ["/customers", "/customer"],
     },
     {
       icon: <DollarSign className="w-5 h-5" />,
       label: "Pricing",
       Link: "/pricing",
+      matchPaths: ["/pricing"],
     },
     {
       icon: <AlignCenterVertical className="w-5 h-5"/>,
       label: "Support",
       Link: "/support",
+      matchPaths: ["/support"],
     },
     {
       icon: <Settings className="w-5 h-5" />,
       label: "Settings",
       Link: "/settings",
+      matchPaths: ["/settings"],
     },
   ];
 
@@ -70,28 +78,42 @@ const Sidebar = ({ closeDrawer }) => {
     navigate("/sign-in", { replace: true });
   };
 
+  const isRouteActive = (item) =>
+    (item.matchPaths || [item.Link]).some((path) => {
+      if (path === "/") {
+        return location.pathname === "/" || location.pathname === "/dashboard";
+      }
+
+      return (
+        location.pathname === path ||
+        location.pathname.startsWith(`${path}/`)
+      );
+    });
+
   return (
-    <div className="w-72  bg-[#0a3019]  h-full">
+    <div className="flex h-full w-72 flex-col bg-[#0a3019]">
       <div className="border-b-2 border-[#166534]">
          <div className="px-8 py-5 ">
         <img src={brandlogo} alt="logo" className="w-auto" />
       </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto ">
+      <div className="flex-1 overflow-y-auto py-4">
         {menuItems.map((item) => {
-          const isActive = location.pathname === item.Link;
+          const isActive = isRouteActive(item);
 
           return (
-            <div key={item.label}>
-              <div
-                className={`flex w-4/5 mx-auto rounded-lg justify-between items-center px-5 py-2 my-5 cursor-pointer transition-all hover:bg-[#166534] hover:text-white hover:font-semibold ${
+            <div key={item.label} className="px-4">
+              <Link
+                to={item.Link}
+                onClick={() => closeDrawer?.()}
+                className={`my-2 flex w-full items-center justify-between rounded-lg px-5 py-3 transition-all hover:bg-[#166534] hover:text-white hover:font-semibold ${
                   isActive
                     ? "bg-[#166534] text-white font-semibold"
                     : "text-white"
                 }`}
               >
-                <Link to={item.Link} onClick={() => closeDrawer?.()} className="flex items-center gap-3">
+                <span className="flex items-center gap-3">
                   {item.icon}
                   <p>{item.label}</p>
                   {item.isDropdown && (
@@ -99,14 +121,14 @@ const Sidebar = ({ closeDrawer }) => {
                       className={`${isActive ? "rotate-180" : ""}`}
                     />
                   )}
-                </Link>
-              </div>
+                </span>
+              </Link>
             </div>
           );
         })}
       </div>
 
-      <div className="mt-60">
+      <div className="mt-auto px-4 pb-6 pt-4">
         <button
           type="button"
           onClick={handleLogout}

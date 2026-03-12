@@ -1,156 +1,268 @@
-import React from 'react';
-import { Calendar, Users, Clock, DollarSign, User } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { Calendar, Clock, DollarSign, User, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { adminApi } from "../../lib/api/admin-api";
+import { getApiErrorMessage } from "../../lib/api/http";
+import {
+  getBookingCustomerName,
+  getBookingStatusClasses,
+  getBookingStatusLabel,
+} from "../../lib/bookings";
+import {
+  formatLocation,
+  formatWorkerStatus,
+  getInitials,
+  getWorkerStatusClasses,
+} from "../../lib/workers";
 
-export default function Dashboard() {
+const formatCurrency = (value) =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: Number.isInteger(Number(value || 0)) ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(Number(value || 0));
+
+const Dashboard = () => {
+  const navigate = useNavigate();
+  const [dashboard, setDashboard] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let ignore = false;
+
+    const loadDashboard = async () => {
+      setIsLoading(true);
+      setError("");
+
+      try {
+        const data = await adminApi.getDashboardStats();
+
+        if (!ignore) {
+          setDashboard(data);
+        }
+      } catch (apiError) {
+        if (!ignore) {
+          setError(getApiErrorMessage(apiError));
+        }
+      } finally {
+        if (!ignore) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadDashboard();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
   const stats = [
     {
-      title: 'Total Bookings',
-      value: '1,247',
-      change: '12% from last month',
+      title: "Total Bookings",
+      value: Number(dashboard?.totalBookings || 0).toLocaleString(),
+      change: "All booking records",
       icon: Calendar,
-      bgColor: 'bg-blue-50',
-      iconColor: 'text-blue-600'
+      bgColor: "bg-blue-50",
+      iconColor: "text-blue-600",
     },
     {
-      title: 'Active Workers',
-      value: '342',
-      change: '8% from last month',
+      title: "Active Workers",
+      value: Number(dashboard?.activeWorkers || 0).toLocaleString(),
+      change: "Approved and active accounts",
       icon: Users,
-      bgColor: 'bg-green-50',
-      iconColor: 'text-green-600'
+      bgColor: "bg-green-50",
+      iconColor: "text-green-600",
     },
     {
-      title: 'Pending Jobs',
-      value: '89',
-      change: 'Awaiting assignment',
+      title: "Pending Jobs",
+      value: Number(dashboard?.pendingJobs || 0).toLocaleString(),
+      change: "Awaiting assignment",
       icon: Clock,
-      bgColor: 'bg-orange-50',
-      iconColor: 'text-orange-600',
-      changeColor: 'text-orange-600'
+      bgColor: "bg-orange-50",
+      iconColor: "text-orange-600",
+      changeColor: "text-orange-600",
     },
     {
-      title: 'Platform Earnings',
-      value: '$18,492',
-      change: '12% commission total',
+      title: "Platform Earnings",
+      value: formatCurrency(dashboard?.totalPlatformFee || 0),
+      change: "Total platform fee collected",
       icon: DollarSign,
-      bgColor: 'bg-purple-50',
-      iconColor: 'text-purple-600'
-    }
+      bgColor: "bg-purple-50",
+      iconColor: "text-purple-600",
+    },
   ];
 
-  const bookings = [
-    { name: 'Sarah Johnson', service: 'Lawn Mowing', status: 'Completed', statusColor: 'bg-green-100 text-green-700' },
-    { name: 'Michael Chen', service: 'Tree Trimming', status: 'In Progress', statusColor: 'bg-blue-100 text-blue-700' },
-    { name: 'Emily Rodriguez', service: 'Garden Cleanup', status: 'Pending', statusColor: 'bg-orange-100 text-orange-700' },
-    { name: 'David Thompson', service: 'Hedge Trimming', status: 'Completed', statusColor: 'bg-green-100 text-green-700' },
-    { name: 'Jessica Martinez', service: 'Lawn Fertilizing', status: 'In Progress', statusColor: 'bg-blue-100 text-blue-700' }
-  ];
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 mt-16">
+        <div className="rounded-lg bg-white p-10 text-center text-gray-500 shadow-sm">
+          Loading dashboard...
+        </div>
+      </div>
+    );
+  }
 
-  const applications = [
-    { name: 'Robert Williams', location: 'Austin, TX', status: 'Under Review', statusColor: 'bg-yellow-100 text-yellow-700' },
-    { name: 'James Anderson', location: 'Dallas, TX', status: 'Under Review', statusColor: 'bg-yellow-100 text-yellow-700' },
-    { name: 'Christopher Lee', location: 'Houston, TX', status: 'Approved', statusColor: 'bg-green-100 text-green-700' },
-    { name: 'Daniel Brown', location: 'San Antonio, TX', status: 'Under Review', statusColor: 'bg-yellow-100 text-yellow-700' },
-    { name: 'Matthew Davis', location: 'Fort Worth, TX', status: 'Rejected', statusColor: 'bg-red-100 text-red-700' }
-  ];
-
-  const getInitials = (name) => {
-    return name.split(' ').map(n => n[0]).join('');
-  };
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 mt-16">
+        <div className="rounded-lg bg-white p-10 text-center text-red-600 shadow-sm">
+          {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen p-6 mt-16 bg-gray-50">
-      <div className="mx-auto ">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 gap-6 mb-8 shadow-md md:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat, index) => (
-            <div key={index} className="p-6 bg-white rounded-lg shadow-sm">
-              <div className="flex items-start justify-between">
+    <div className="min-h-screen bg-gray-50 p-6 mt-16">
+      <div className="mx-auto">
+        <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat) => (
+            <div key={stat.title} className="rounded-lg bg-white p-6 shadow-sm">
+              <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="mb-2 text-sm text-gray-600">{stat.title}</p>
-                  <h3 className="mb-2 text-3xl font-bold text-#0A3019">{stat.value}</h3>
-                  <p className={`text-sm flex items-center ${stat.changeColor || 'text-gray-600'}`}>
-                    {stat.title === 'Total Bookings' || stat.title === 'Active Workers' ? '↑ ' : ''}
+                  <h3 className="mb-2 text-3xl font-bold text-gray-900">{stat.value}</h3>
+                  <p className={`text-sm ${stat.changeColor || "text-gray-600"}`}>
                     {stat.change}
                   </p>
                 </div>
-                <div className={`${stat.bgColor} p-3 rounded-lg`}>
-                  <stat.icon className={`w-6 h-6 ${stat.iconColor}`} />
+                <div className={`${stat.bgColor} rounded-lg p-3`}>
+                  <stat.icon className={`h-6 w-6 ${stat.iconColor}`} />
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Main Content Grid */}
         <div className="grid grid-cols-1 gap-6 mb-8 lg:grid-cols-2">
-          {/* Latest Bookings */}
-          <div className="p-6 bg-white rounded-lg shadow-md">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-#0A3019">Latest Bookings</h2>
-              <button className="text-sm text-gray-600 hover:text-#0A3019">View All</button>
+          <div className="rounded-lg bg-white p-6 shadow-sm">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">Latest Bookings</h2>
+              <button
+                type="button"
+                onClick={() => navigate("/booking")}
+                className="text-sm text-gray-600 transition hover:text-gray-900"
+              >
+                View All
+              </button>
             </div>
+
             <div className="space-y-4">
-              {bookings.map((booking, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-10 h-10 text-sm font-semibold text-gray-700 bg-gray-200 rounded-full">
-                      {getInitials(booking.name)}
+              {dashboard?.recentBookings?.length ? (
+                dashboard.recentBookings.map((booking) => (
+                  <button
+                    key={booking._id}
+                    type="button"
+                    onClick={() => navigate(`/booking/${booking._id}`)}
+                    className="flex w-full items-center justify-between gap-4 rounded-lg p-2 text-left transition hover:bg-gray-50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-sm font-semibold text-gray-700">
+                        {getInitials(getBookingCustomerName(booking))}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900">
+                          {getBookingCustomerName(booking)}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {booking.title || booking.serviceType || "Service request"}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold text-#0A3019">{booking.name}</p>
-                      <p className="text-sm text-gray-600">{booking.service}</p>
-                    </div>
-                  </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${booking.statusColor}`}>
-                    {booking.status}
-                  </span>
+                    <span
+                      className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getBookingStatusClasses(
+                        booking.status
+                      )}`}
+                    >
+                      {getBookingStatusLabel(booking.status)}
+                    </span>
+                  </button>
+                ))
+              ) : (
+                <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500">
+                  No recent bookings available.
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
-          {/* New Worker Applications */}
-          <div className="p-6 bg-white rounded-lg shadow-md">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-#0A3019">New Worker Applications</h2>
-              <button className="text-sm text-gray-600 hover:text-#0A3019">View All</button>
+          <div className="rounded-lg bg-white p-6 shadow-sm">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">New Worker Applications</h2>
+              <button
+                type="button"
+                onClick={() => navigate("/workers")}
+                className="text-sm text-gray-600 transition hover:text-gray-900"
+              >
+                View All
+              </button>
             </div>
+
             <div className="space-y-4">
-              {applications.map((app, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-10 h-10 text-sm font-semibold text-gray-700 bg-gray-200 rounded-full">
-                      {getInitials(app.name)}
+              {dashboard?.recentWorkerApplications?.length ? (
+                dashboard.recentWorkerApplications.map((worker) => (
+                  <button
+                    key={worker._id}
+                    type="button"
+                    onClick={() => navigate(`/workers/${worker._id}`)}
+                    className="flex w-full items-center justify-between gap-4 rounded-lg p-2 text-left transition hover:bg-gray-50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-sm font-semibold text-gray-700">
+                        {getInitials(worker.name)}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900">{worker.name}</p>
+                        <p className="text-sm text-gray-600">{formatLocation(worker.location)}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold text-#0A3019">{app.name}</p>
-                      <p className="text-sm text-gray-600">{app.location}</p>
-                    </div>
-                  </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${app.statusColor}`}>
-                    {app.status}
-                  </span>
+                    <span
+                      className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getWorkerStatusClasses(
+                        worker.workerStatus
+                      )}`}
+                    >
+                      {formatWorkerStatus(worker.workerStatus)}
+                    </span>
+                  </button>
+                ))
+              ) : (
+                <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500">
+                  No worker applications found.
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className='p-6 bg-white rounded-lg shadow-md'>
-          <h2 className="mb-4 text-xl font-bold text-#0A3019 ">Quick Actions</h2>
+        <div className="rounded-lg bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-xl font-bold text-gray-900">Quick Actions</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <button className="flex items-center justify-center gap-3 px-6 py-4 font-semibold text-white transition bg-[#0A3019] rounded-lg ">
-              <Calendar className="w-5 h-5" />
+            <button
+              type="button"
+              onClick={() => navigate("/booking")}
+              className="flex items-center justify-center gap-3 rounded-lg bg-[#0A3019] px-6 py-4 font-semibold text-white transition hover:bg-[#114026]"
+            >
+              <Calendar className="h-5 w-5" />
               View All Bookings
             </button>
-            <button className="flex items-center justify-center gap-3 px-6 py-4 font-semibold text-white transition bg-[#0A3019] rounded-lg ">
-              <User className="w-5 h-5" />
+            <button
+              type="button"
+              onClick={() => navigate("/workers")}
+              className="flex items-center justify-center gap-3 rounded-lg bg-[#0A3019] px-6 py-4 font-semibold text-white transition hover:bg-[#114026]"
+            >
+              <User className="h-5 w-5" />
               Review Worker Applications
             </button>
-            <button className="flex items-center justify-center gap-3 px-6 py-4 font-semibold text-white transition bg-[#0A3019] rounded-lg ">
-              <DollarSign className="w-5 h-5" />
+            <button
+              type="button"
+              onClick={() => navigate("/payments")}
+              className="flex items-center justify-center gap-3 rounded-lg bg-[#0A3019] px-6 py-4 font-semibold text-white transition hover:bg-[#114026]"
+            >
+              <DollarSign className="h-5 w-5" />
               View Payments
             </button>
           </div>
@@ -158,4 +270,6 @@ export default function Dashboard() {
       </div>
     </div>
   );
-}
+};
+
+export default Dashboard;

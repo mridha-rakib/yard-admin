@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { IoMdNotifications } from "react-icons/io";
 import { Bell } from "lucide-react";
@@ -8,8 +8,6 @@ import adminImage from "../../assets/image/adminkickclick.jpg";
 const Header = ({ showDrawer }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationsCount] = useState(5);
-  const navigate = useNavigate();
-  const location = useLocation();
 
   const adminProfile = {
     name: "James",
@@ -23,11 +21,9 @@ const Header = ({ showDrawer }) => {
     { message: "New comment on your post.", time: "Fri, 12:30pm" },
   ];
 
-  const isMessagesActive = location.pathname === "/messages";
-
   return (
-    <div className="relative mt-2 border-b-2">
-      <div className="flex items-center justify-between p-4 ">
+    <div className="relative">
+      <div className="flex min-h-20 items-center justify-between py-4">
         {/*============================= Left Section============================= */}
         <div className="flex items-center gap-4">
           <RxHamburgerMenu
@@ -62,7 +58,7 @@ const Header = ({ showDrawer }) => {
             <div className="p-2 text-blue-700 transition border border-blue-500 rounded-full hover:bg-blue-50">
               <img
                 src={adminImage}
-                alt="Admin"
+                alt={adminProfile.name}
                 className="object-cover w-6 h-6 rounded-full"
               />
             </div>

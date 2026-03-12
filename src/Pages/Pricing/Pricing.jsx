@@ -21,19 +21,14 @@ import {
   createEmptyService,
   normalizePricingCategories,
 } from "../../lib/pricing-content";
+import { formatDateTime } from "../../lib/time";
 
 const formatTimestamp = (value) => {
   if (!value) {
     return "Not saved yet";
   }
 
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Not saved yet";
-  }
-
-  return date.toLocaleString();
+  return formatDateTime(value) || "Not saved yet";
 };
 
 const formatPrice = (value) => `$${Number(value || 0).toFixed(2)}`;

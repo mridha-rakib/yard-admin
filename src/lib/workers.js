@@ -1,3 +1,5 @@
+import { formatTime } from "./time";
+
 const titleCase = (value = "") =>
   String(value)
     .split(/[_\s-]+/)
@@ -62,7 +64,7 @@ export const formatAvailability = (availability = {}) => {
     : "";
   const timeText =
     availability?.startTime && availability?.endTime
-      ? `${availability.startTime} - ${availability.endTime}`
+      ? `${formatTime(availability.startTime)} - ${formatTime(availability.endTime)}`
       : "";
 
   return [dayText, timeText].filter(Boolean).join(" | ") || "Not provided";
