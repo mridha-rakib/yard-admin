@@ -1,38 +1,70 @@
-import { Form, Input, Checkbox, Typography, message } from "antd";
+import { Form, Input, Typography, message } from "antd";
 import { FaRegEyeSlash } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa6";
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import brandlogo from "../../../assets/image/logo_yard.png";
+import { authApi } from "../../../lib/api/auth-api";
+import {
+  clearPasswordRecoveryState,
+  getPasswordRecoveryState,
+} from "../../../lib/auth-recovery";
 
 const NewPass = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [recoveryState, setRecoveryState] = useState(null);
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  useEffect(() => {
+    const storedState = getPasswordRecoveryState();
 
-  const toggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword(!showConfirmPassword);
-  };
+    if (!storedState?.email || !storedState?.resetToken) {
+      navigate("/forgate-password", { replace: true });
+      return;
+    }
+
+    setRecoveryState(storedState);
+  }, [navigate]);
 
   const onFinish = async (values) => {
-    setLoading(true);
-    const { email, newPassword, confirmPassword } = values;
+    const { newPassword, confirmPassword } = values;
 
-    // Simulate API call
-    setTimeout(() => {
-      if (newPassword !== confirmPassword) {
-        message.error("Passwords do not match!");
-      } else {
-        message.success("Password changed successfully");
-        navigate("/sign-in");
-      }
+    if (newPassword !== confirmPassword) {
+      message.error("Passwords do not match!");
+      return;
+    }
+
+    if (String(newPassword || "").length < 8) {
+      message.error("Password must be at least 8 characters.");
+      return;
+    }
+
+    if (!recoveryState?.email || !recoveryState?.resetToken) {
+      navigate("/forgate-password", { replace: true });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await authApi.resetPasswordWithToken({
+        email: recoveryState.email,
+        resetToken: recoveryState.resetToken,
+        newPassword,
+      });
+
+      clearPasswordRecoveryState();
+      message.success("Password changed successfully.");
+      navigate("/sign-in", { replace: true });
+    } catch (error) {
+      message.error(
+        error?.response?.data?.message || "Unable to update the password."
+      );
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -41,21 +73,23 @@ const NewPass = () => {
         <div className="flex flex-col items-center justify-center w-full gap-2 mx-auto md:max-w-screen-md">
           <Form
             name="new-password"
-            initialValues={{ remember: true }}
             onFinish={onFinish}
             layout="vertical"
             className="w-full max-w-lg px-6 py-10 mt-10 bg-white md:py-20 md:px-10 rounded-2xl"
           >
-            <div className="mx-auto ">
-              <div className="flex justify-center "> 
-                <img  src={brandlogo} alt="brandlogo" className="w-auto my-3" />
+            <div className="mx-auto">
+              <div className="flex justify-center">
+                <img src={brandlogo} alt="brandlogo" className="w-auto my-3" />
               </div>
               <h2 className="mb-4 text-2xl font-bold text-gray-700 md:text-3xl">
-                Create New Password
+                Create new password
               </h2>
               <Typography.Text className="text-base text-gray-600">
-                Create a new password. Ensure it differs from previous ones for
-                security
+                Choose a new password for{" "}
+                <span className="font-semibold text-gray-700">
+                  {recoveryState?.email || "your account"}
+                </span>
+                .
               </Typography.Text>
             </div>
 
@@ -73,7 +107,7 @@ const NewPass = () => {
                   className="text-md"
                 />
                 <div className="absolute right-0 pr-3">
-                  <button type="button" onClick={togglePasswordVisibility}>
+                  <button type="button" onClick={() => setShowPassword((current) => !current)}>
                     {showPassword ? <FaRegEye /> : <FaRegEyeSlash />}
                   </button>
                 </div>
@@ -96,7 +130,7 @@ const NewPass = () => {
                 <div className="absolute right-0 pr-3">
                   <button
                     type="button"
-                    onClick={toggleConfirmPasswordVisibility}
+                    onClick={() => setShowConfirmPassword((current) => !current)}
                   >
                     {showConfirmPassword ? <FaRegEye /> : <FaRegEyeSlash />}
                   </button>
@@ -106,11 +140,11 @@ const NewPass = () => {
 
             <Form.Item className="mt-8 text-center">
               <button
-                className="bg-[#0A3019] text-center w-full   p-2 font-semibold  text-white px-20 py-3 rounded-md "
+                className="bg-[#0A3019] text-center w-full p-2 font-semibold text-white px-20 py-3 rounded-md"
                 type="submit"
                 disabled={loading}
               >
-                {loading ? "Loading..." : "Update Password"}
+                {loading ? "Updating..." : "Update Password"}
               </button>
             </Form.Item>
           </Form>
