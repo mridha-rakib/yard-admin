@@ -12,6 +12,17 @@ const unwrapCollection = (response) => ({
   },
 });
 
+const unwrapCollectionWithSummary = (response) => ({
+  items: response.data.items || [],
+  pagination: response.data.pagination || {
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 1,
+  },
+  summary: response.data.summary || {},
+});
+
 export const adminApi = {
   getDashboardStats: () => apiClient.get("/admin/dashboard").then(unwrapData),
   listWorkers: (params = {}) =>
@@ -22,6 +33,7 @@ export const adminApi = {
     apiClient.patch(`/admin/workers/${workerId}/approve`).then(unwrapData),
   rejectWorker: (workerId) =>
     apiClient.patch(`/admin/workers/${workerId}/reject`).then(unwrapData),
+  deleteWorker: (workerId) => apiClient.delete(`/admin/workers/${workerId}`).then(unwrapData),
   updateWorkerAccountStatus: (workerId, status) =>
     apiClient
       .patch(`/admin/workers/${workerId}/account-status`, { status })
@@ -29,6 +41,8 @@ export const adminApi = {
   listCustomers: (params = {}) =>
     apiClient.get("/admin/customers", { params }).then(unwrapCollection),
   getCustomerById: (customerId) => apiClient.get(`/admin/customers/${customerId}`).then(unwrapData),
+  listPayments: (params = {}) =>
+    apiClient.get("/admin/payments", { params }).then(unwrapCollectionWithSummary),
   listBookings: (params = {}) =>
     apiClient.get("/admin/bookings", { params }).then(unwrapCollection),
   getBookingById: (jobId) => apiClient.get(`/admin/bookings/${jobId}`).then(unwrapData),

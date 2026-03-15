@@ -1,7 +1,26 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 .subtract-width {
   width: calc(100% - 18rem);
+}
+
+@layer base {
+  html {
+    font-family: "Inter", sans-serif;
+  }
+
+  body {
+    @apply antialiased;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
 }

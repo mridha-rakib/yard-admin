@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { message } from "antd";
-import { ChevronLeft, CheckCircle, XCircle, Pause, Play } from "lucide-react";
+import { ChevronLeft, CheckCircle, XCircle, Pause, Play, Trash2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { adminApi } from "../../lib/api/admin-api";
 import { getApiErrorMessage } from "../../lib/api/http";
@@ -83,6 +83,21 @@ export default function WorkerDetailsPage() {
       if (action === "reactivate") {
         updatedWorker = await adminApi.updateWorkerAccountStatus(worker._id, "active");
         successMessage = "Worker reactivated successfully.";
+      }
+
+      if (action === "delete") {
+        const confirmed = window.confirm(
+          "Delete this worker profile? This will revoke access, hide the worker from admin lists, and reopen any assigned jobs. This action cannot be undone."
+        );
+
+        if (!confirmed) {
+          return;
+        }
+
+        await adminApi.deleteWorker(worker._id);
+        message.success("Worker deleted successfully.");
+        navigate("/workers", { replace: true });
+        return;
       }
 
       if (updatedWorker) {
@@ -370,9 +385,15 @@ export default function WorkerDetailsPage() {
                     </button>
                   ) : null}
 
-                  {!canApprove && !canReject && !canSuspend && !canReactivate ? (
-                    <div className="text-sm text-gray-500">No actions available for this worker.</div>
-                  ) : null}
+                  <button
+                    onClick={() => handleAction("delete")}
+                    disabled={Boolean(actionLoading)}
+                    className="flex items-center justify-center w-full gap-2 px-4 py-2.5 text-sm font-medium text-white transition bg-red-700 rounded-lg hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    {actionLoading === "delete" ? "Deleting..." : "Delete Worker"}
+                  </button>
+
                 </div>
               </div>
             </div>
