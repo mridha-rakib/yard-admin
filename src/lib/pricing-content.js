@@ -93,8 +93,8 @@ export const DEFAULT_PRICING_CATEGORIES = [
         price: 50,
         duration: "1-2 hours",
         description: "Professional hedge trimming with shaping and debris removal.",
-        buttonText: "Get Started",
-        buttonVariant: "secondary",
+        buttonText: "Book Service",
+        buttonVariant: "primary",
       },
       {
         id: "yard-bush-trimming",
@@ -103,8 +103,8 @@ export const DEFAULT_PRICING_CATEGORIES = [
         price: 45,
         duration: "1-2 hours",
         description: "Trimming bushes and shrubs to enhance yard appearance.",
-        buttonText: "Get Started",
-        buttonVariant: "secondary",
+        buttonText: "Book Service",
+        buttonVariant: "primary",
       },
       {
         id: "yard-garden-bed-cleanup",

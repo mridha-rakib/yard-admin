@@ -26,6 +26,7 @@ import {
 } from "../../lib/settings";
 import { formatDateTime } from "../../lib/time";
 import { getInitials } from "../../lib/workers";
+import RichTextEditor from "../../Components/ui/rich-text-editor";
 
 const createEmptyPasswordState = () => ({
   currentPassword: "",
@@ -34,6 +35,30 @@ const createEmptyPasswordState = () => ({
 });
 
 const formatLastSeen = (value) => formatDateTime(value) || "Not available";
+
+const extractPlainText = (value = "") =>
+  String(value)
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&#39;/gi, "'")
+    .replace(/&quot;/gi, '"')
+    .replace(/\s+/g, " ")
+    .trim();
+
+const normalizeRichTextBody = (value = "") => {
+  const normalizedValue = String(value || "").trim();
+
+  if (!normalizedValue) {
+    return "";
+  }
+
+  return extractPlainText(normalizedValue) ? normalizedValue : "";
+};
 
 const Settings = () => {
   const [platformInfo, setPlatformInfo] = useState(DEFAULT_PLATFORM_INFO);
@@ -145,7 +170,7 @@ const Settings = () => {
           ? {
               ...legalDocDraft,
               name: legalDocDraft.name.trim(),
-              body: String(legalDocDraft.body || "").trim(),
+              body: normalizeRichTextBody(legalDocDraft.body),
             }
           : document
       )
@@ -517,37 +542,43 @@ const Settings = () => {
               <h2 className="mb-6 text-xl font-semibold text-gray-900">Legal & Compliance</h2>
 
               <div className="space-y-3">
-                {legalDocs.map((document) => (
-                  <div
-                    key={document.id}
-                    className="flex items-center justify-between gap-4 border-b border-gray-100 py-3 last:border-b-0"
-                  >
-                    <div className="min-w-0">
-                      <div className="font-medium text-gray-900">{document.name}</div>
-                      <div className="mt-1 flex items-center gap-2">
-                        <span
-                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getLegalDocumentStatusClasses(
-                            document.status
-                          )}`}
-                        >
-                          {document.status === "inactive" ? "Inactive" : "Active"}
-                        </span>
-                        <span className="truncate text-xs text-gray-500">
-                          {document.body ? `${document.body.slice(0, 96)}${document.body.length > 96 ? "..." : ""}` : "No content added yet."}
-                        </span>
-                      </div>
-                    </div>
+                {legalDocs.map((document) => {
+                  const previewText = extractPlainText(document.body);
 
-                    <button
-                      type="button"
-                      onClick={() => openLegalDocDialog(document)}
-                      className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-emerald-700 transition hover:text-emerald-800"
+                  return (
+                    <div
+                      key={document.id}
+                      className="flex items-center justify-between gap-4 border-b border-gray-100 py-3 last:border-b-0"
                     >
-                      Edit
-                      <ExternalLink className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
+                      <div className="min-w-0">
+                        <div className="font-medium text-gray-900">{document.name}</div>
+                        <div className="mt-1 flex items-center gap-2">
+                          <span
+                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getLegalDocumentStatusClasses(
+                              document.status
+                            )}`}
+                          >
+                            {document.status === "inactive" ? "Inactive" : "Active"}
+                          </span>
+                          <span className="truncate text-xs text-gray-500">
+                            {previewText
+                              ? `${previewText.slice(0, 96)}${previewText.length > 96 ? "..." : ""}`
+                              : "No content added yet."}
+                          </span>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => openLegalDocDialog(document)}
+                        className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-emerald-700 transition hover:text-emerald-800"
+                      >
+                        Edit
+                        <ExternalLink className="h-4 w-4" />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </section>
           </div>
@@ -609,11 +640,11 @@ const Settings = () => {
                   <label className="mb-2 block text-sm font-medium text-gray-700">
                     Content
                   </label>
-                  <textarea
-                    rows={10}
+                  <RichTextEditor
                     value={legalDocDraft.body}
-                    onChange={(event) => handleLegalDocDraftChange("body", event.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-green-700"
+                    onChange={(value) => handleLegalDocDraftChange("body", value)}
+                    placeholder="Write and format the document content here..."
+                    minHeight={360}
                   />
                 </div>
               </div>
