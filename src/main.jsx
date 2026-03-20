@@ -3,7 +3,7 @@ import './index.css'
 import { router } from './router/Routes'
 import { RouterProvider } from 'react-router-dom'
 import AuthBootstrap from './Components/auth/AuthBootstrap'
-import { Toaster } from './components/ui/sonner'
+import { Toaster } from './Components/ui/sonner'
 
 createRoot(document.getElementById('root')).render(
   <>

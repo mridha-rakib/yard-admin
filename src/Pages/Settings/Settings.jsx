@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ExternalLink, ImagePlus, LoaderCircle, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/Components/ui/dialog";
 import { adminApi } from "../../lib/api/admin-api";
 import { getApiErrorMessage } from "../../lib/api/http";
 import {
