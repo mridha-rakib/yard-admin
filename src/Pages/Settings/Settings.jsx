@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ExternalLink, LoaderCircle, Save } from "lucide-react";
+import { ExternalLink, ImagePlus, LoaderCircle, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +26,12 @@ import {
 } from "../../lib/settings";
 import { formatDateTime } from "../../lib/time";
 import { getInitials } from "../../lib/workers";
+import {
+  PROFILE_PHOTO_ACCEPT,
+  PROFILE_PHOTO_REQUIREMENTS,
+  optimizeProfilePhotoFile,
+} from "../../lib/profile-photo";
+import { useAuthStore } from "../../stores/use-auth-store";
 import RichTextEditor from "../../Components/ui/rich-text-editor";
 
 const createEmptyPasswordState = () => ({
@@ -61,6 +67,7 @@ const normalizeRichTextBody = (value = "") => {
 };
 
 const Settings = () => {
+  const refreshCurrentUser = useAuthStore((state) => state.refreshCurrentUser);
   const [platformInfo, setPlatformInfo] = useState(DEFAULT_PLATFORM_INFO);
   const [paymentSettings, setPaymentSettings] = useState(DEFAULT_PAYMENT_SETTINGS);
   const [notifications, setNotifications] = useState(DEFAULT_NOTIFICATION_SETTINGS);
@@ -72,6 +79,7 @@ const Settings = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [isUpdatingProfilePhoto, setIsUpdatingProfilePhoto] = useState(false);
   const [error, setError] = useState("");
 
   const applySettings = (settings) => {
@@ -209,6 +217,52 @@ const Settings = () => {
       toast.error(getApiErrorMessage(apiError));
     } finally {
       setIsUpdatingPassword(false);
+    }
+  };
+
+  const updateAdminProfilePhoto = async (profilePhotoUrl) => {
+    setIsUpdatingProfilePhoto(true);
+
+    try {
+      const updatedProfile = await adminApi.updateCurrentProfile({ profilePhotoUrl });
+      setAdminProfile(updatedProfile);
+      await refreshCurrentUser();
+      toast.success(
+        profilePhotoUrl ? "Profile photo updated successfully." : "Profile photo removed."
+      );
+    } catch (apiError) {
+      toast.error(getApiErrorMessage(apiError));
+    } finally {
+      setIsUpdatingProfilePhoto(false);
+    }
+  };
+
+  const handleAdminPhotoChange = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    setIsUpdatingProfilePhoto(true);
+
+    try {
+      const optimizedPhoto = await optimizeProfilePhotoFile(file);
+      const updatedProfile = await adminApi.updateCurrentProfile({
+        profilePhotoUrl: optimizedPhoto,
+      });
+      setAdminProfile(updatedProfile);
+      await refreshCurrentUser();
+      toast.success("Profile photo updated successfully.");
+    } catch (apiError) {
+      toast.error(
+        apiError?.message && !apiError?.response
+          ? apiError.message
+          : getApiErrorMessage(apiError)
+      );
+    } finally {
+      setIsUpdatingProfilePhoto(false);
     }
   };
 
@@ -477,6 +531,56 @@ const Settings = () => {
                 </p>
               </div>
 
+              <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <p className="text-sm font-medium text-gray-900">Profile photo</p>
+                <p className="mt-1 text-sm text-gray-600">
+                  Upload a new image to update your admin avatar across the dashboard.
+                </p>
+
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <input
+                    id="admin-profile-photo-upload"
+                    type="file"
+                    accept={PROFILE_PHOTO_ACCEPT}
+                    onChange={handleAdminPhotoChange}
+                    className="hidden"
+                    disabled={isUpdatingProfilePhoto}
+                  />
+                  <label
+                    htmlFor="admin-profile-photo-upload"
+                    className={`inline-flex items-center justify-center rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-800 ${
+                      isUpdatingProfilePhoto ? "cursor-not-allowed opacity-70" : ""
+                    }`}
+                  >
+                    {isUpdatingProfilePhoto ? (
+                      <>
+                        <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                        Updating photo...
+                      </>
+                    ) : (
+                      <>
+                        <ImagePlus className="mr-2 h-4 w-4" />
+                        Upload photo
+                      </>
+                    )}
+                  </label>
+
+                  {adminProfile?.profilePhotoUrl ? (
+                    <button
+                      type="button"
+                      onClick={() => updateAdminProfilePhoto("")}
+                      disabled={isUpdatingProfilePhoto}
+                      className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Remove photo
+                    </button>
+                  ) : null}
+                </div>
+
+                <p className="mt-3 text-xs text-gray-500">{PROFILE_PHOTO_REQUIREMENTS}</p>
+              </div>
+
               <div className="space-y-4">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-gray-700">
@@ -596,68 +700,79 @@ const Settings = () => {
           </button>
         </div>
 
-        <Dialog open={Boolean(selectedLegalDoc)} onOpenChange={(open) => (!open ? closeLegalDocDialog() : null)}>
-          <DialogContent className="max-w-3xl">
-            <DialogHeader>
-              <DialogTitle>{selectedLegalDoc?.name || "Edit Document"}</DialogTitle>
-              <DialogDescription>
-                Update the document status and content. These changes will be included in
-                the next settings save.
-              </DialogDescription>
-            </DialogHeader>
+        <Dialog
+          open={Boolean(selectedLegalDoc)}
+          onOpenChange={(open) => (!open ? closeLegalDocDialog() : null)}
+        >
+          <DialogContent className="max-h-[calc(100vh-2rem)] max-w-4xl overflow-hidden p-0">
+            <div className="flex min-h-0 max-h-[min(90vh,56rem)] flex-col">
+              <DialogHeader className="shrink-0 border-b border-gray-200 px-6 pb-4 pt-6 pr-14">
+                <DialogTitle>{selectedLegalDoc?.name || "Edit Document"}</DialogTitle>
+                <DialogDescription>
+                  Update the document status and content. These changes will be included in
+                  the next settings save.
+                </DialogDescription>
+              </DialogHeader>
 
-            {legalDocDraft ? (
-              <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    Document Name
-                  </label>
-                  <input
-                    type="text"
-                    value={legalDocDraft.name}
-                    onChange={(event) => handleLegalDocDraftChange("name", event.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-green-700"
-                  />
+              {legalDocDraft ? (
+                <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-gray-700">
+                        Document Name
+                      </label>
+                      <input
+                        type="text"
+                        value={legalDocDraft.name}
+                        onChange={(event) =>
+                          handleLegalDocDraftChange("name", event.target.value)
+                        }
+                        className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-green-700"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-gray-700">
+                        Status
+                      </label>
+                      <select
+                        value={legalDocDraft.status}
+                        onChange={(event) =>
+                          handleLegalDocDraftChange("status", event.target.value)
+                        }
+                        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-green-700"
+                      >
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                      </select>
+                    </div>
+
+                    <div className="min-h-0">
+                      <label className="mb-2 block text-sm font-medium text-gray-700">
+                        Content
+                      </label>
+                      <RichTextEditor
+                        value={legalDocDraft.body}
+                        onChange={(value) => handleLegalDocDraftChange("body", value)}
+                        placeholder="Write and format the document content here..."
+                        minHeight={420}
+                        height={420}
+                        maxHeight={420}
+                      />
+                    </div>
+                  </div>
                 </div>
+              ) : null}
 
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    Status
-                  </label>
-                  <select
-                    value={legalDocDraft.status}
-                    onChange={(event) =>
-                      handleLegalDocDraftChange("status", event.target.value)
-                    }
-                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-green-700"
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    Content
-                  </label>
-                  <RichTextEditor
-                    value={legalDocDraft.body}
-                    onChange={(value) => handleLegalDocDraftChange("body", value)}
-                    placeholder="Write and format the document content here..."
-                    minHeight={360}
-                  />
-                </div>
-              </div>
-            ) : null}
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={closeLegalDocDialog}>
-                Cancel
-              </Button>
-              <Button type="button" onClick={handleSaveLegalDocDraft}>
-                Apply Changes
-              </Button>
-            </DialogFooter>
+              <DialogFooter className="mx-0 mb-0 shrink-0 border-t border-gray-200 bg-white px-6 py-4">
+                <Button type="button" variant="outline" onClick={closeLegalDocDialog}>
+                  Cancel
+                </Button>
+                <Button type="button" onClick={handleSaveLegalDocDraft}>
+                  Apply Changes
+                </Button>
+              </DialogFooter>
+            </div>
           </DialogContent>
         </Dialog>
       </div>

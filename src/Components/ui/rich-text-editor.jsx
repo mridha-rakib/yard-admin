@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import JoditEditor from "jodit-react";
 import "jodit/es2021/jodit.min.css";
 
@@ -31,30 +31,40 @@ const RichTextEditor = ({
   onChange,
   placeholder = "Start writing here...",
   minHeight = 320,
+  height = "auto",
+  maxHeight = null,
+  className = "",
 }) => {
   const editorRef = useRef(null);
-  const configRef = useRef({
-    readonly: false,
-    placeholder,
-    minHeight,
-    toolbarAdaptive: false,
-    toolbarSticky: false,
-    statusbar: false,
-    showCharsCounter: false,
-    showWordsCounter: false,
-    showXPathInStatusbar: false,
-    askBeforePasteHTML: false,
-    askBeforePasteFromWord: false,
-    buttons: DEFAULT_EDITOR_BUTTONS,
-    removeButtons: ["image", "video", "file", "copyformat", "cut", "copy", "paste"],
-  });
+  const editorConfig = useMemo(
+    () => ({
+      readonly: false,
+      placeholder,
+      minHeight,
+      height,
+      maxHeight: maxHeight ?? height,
+      toolbarAdaptive: false,
+      toolbarSticky: false,
+      statusbar: false,
+      showCharsCounter: false,
+      showWordsCounter: false,
+      showXPathInStatusbar: false,
+      askBeforePasteHTML: false,
+      askBeforePasteFromWord: false,
+      buttons: DEFAULT_EDITOR_BUTTONS,
+      removeButtons: ["image", "video", "file", "copyformat", "cut", "copy", "paste"],
+    }),
+    [height, maxHeight, minHeight, placeholder]
+  );
 
   return (
-    <div className="rounded-xl border border-gray-300 bg-white shadow-sm focus-within:border-green-700">
+    <div
+      className={`overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm focus-within:border-green-700 ${className}`.trim()}
+    >
       <JoditEditor
         ref={editorRef}
         value={value}
-        config={configRef.current}
+        config={editorConfig}
         tabIndex={1}
         onBlur={(nextValue) => onChange?.(nextValue)}
         onChange={(nextValue) => onChange?.(nextValue)}

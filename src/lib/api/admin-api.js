@@ -50,6 +50,7 @@ export const adminApi = {
     apiClient.patch(`/admin/bookings/${bookingId}/status`, { status }).then(unwrapData),
   getSettings: () => apiClient.get("/admin/settings").then(unwrapData),
   updateSettings: (payload) => apiClient.patch("/admin/settings", payload).then(unwrapData),
+  updateCurrentProfile: (payload) => apiClient.patch("/users/profile", payload).then(unwrapData),
   changeProfilePassword: (payload) =>
     apiClient.patch("/users/profile/password", payload).then(unwrapData),
   listSupportConversations: (params = {}) =>

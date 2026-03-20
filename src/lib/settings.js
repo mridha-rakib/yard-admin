@@ -19,7 +19,7 @@ export const DEFAULT_NOTIFICATION_SETTINGS = {
 export const DEFAULT_LEGAL_DOCS = [
   {
     id: "terms-of-service",
-    name: "Terms of Service",
+    name: "Terms & Conditions",
     status: "active",
     body: "",
   },
