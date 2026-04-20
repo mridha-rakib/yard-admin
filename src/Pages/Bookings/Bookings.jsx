@@ -13,7 +13,7 @@ import {
   getBookingIdLabel,
   getBookingStatusClasses,
   getBookingStatusLabel,
-  getBookingWorkerName,
+  getBookingHeroName,
   getUrgencyClasses,
   getUrgencyLabel,
 } from "../../lib/bookings";
@@ -206,7 +206,7 @@ const Bookings = () => {
                     Urgency
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Worker
+                    Hero
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                     Status
@@ -240,7 +240,7 @@ const Bookings = () => {
                   bookings.map((job) => {
                     const customerName = getBookingCustomerName(job);
                     const customerEmail = getBookingCustomerEmail(job);
-                    const workerName = getBookingWorkerName(job);
+                    const workerName = getBookingHeroName(job);
 
                     return (
                       <tr key={job._id} className="transition hover:bg-gray-50">
@@ -294,7 +294,7 @@ const Bookings = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
                             className={`text-sm ${
-                              workerName === "Unassigned"
+                              workerName === "No Hero connected"
                                 ? "font-semibold text-red-600"
                                 : "text-gray-900"
                             }`}

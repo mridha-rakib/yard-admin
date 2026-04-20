@@ -5,7 +5,7 @@ export const PAYMENT_PAGE_SIZE = 5;
 export const PAYMENT_STATUS_OPTIONS = [
   { label: "All Status", value: "all" },
   { label: "Completed", value: "completed" },
-  { label: "Processing", value: "authorized" },
+  { label: "Secure Hold", value: "authorized" },
   { label: "Pending", value: "pending" },
   { label: "Failed", value: "failed" },
   { label: "Refunded", value: "refunded" },
@@ -22,7 +22,7 @@ export const PAYMENT_METHOD_OPTIONS = [
 
 const PAYMENT_STATUS_LABELS = {
   paid: "Completed",
-  authorized: "Processing",
+  authorized: "Secure Hold",
   pending: "Pending",
   failed: "Failed",
   refunded: "Refunded",
@@ -48,7 +48,7 @@ const PAYMENT_METHOD_LABELS = {
 
 const PAYOUT_STATUS_LABELS = {
   paid: "Paid",
-  authorized: "Processing",
+  authorized: "Secure Hold",
   pending: "Pending",
   failed: "Failed",
   refunded: "Refunded",
@@ -138,8 +138,8 @@ export const mapPaymentRecord = (payment = {}) => {
     },
     worker: {
       id: payment?.worker?._id || "",
-      name: payment?.worker?.name || "Unassigned",
-      email: payment?.worker?.email || "No worker assigned",
+      name: payment?.worker?.name || "No Hero connected",
+      email: payment?.worker?.email || "No Hero connected",
     },
     totalAmount,
     platformFee,
@@ -152,7 +152,7 @@ export const mapPaymentRecord = (payment = {}) => {
     status: getPaymentStatusLabel(payment.status),
     statusCode: payment.status || "",
     jobTitle: payment?.job?.title || payment?.job?.serviceType || "Service request",
-    serviceDate: formatDate(serviceDateValue) || "Not scheduled",
+    serviceDate: formatDate(serviceDateValue) || "Not booked",
     duration: payment?.booking?.scheduledTime || payment?.job?.preferredTime || "Not available",
     address: [
       payment?.job?.streetAddress,
@@ -163,7 +163,7 @@ export const mapPaymentRecord = (payment = {}) => {
       .join(", ") || "Address not available",
     customerId: buildShortId("CUST", payment?.customer?._id),
     phone: payment?.customer?.phone || "No phone available",
-    workerId: buildShortId("WORK", payment?.worker?._id),
+    workerId: buildShortId("HERO", payment?.worker?._id),
     rating: null,
     serviceAmount: totalAmount,
     processingFee: 0,

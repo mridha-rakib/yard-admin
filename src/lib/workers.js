@@ -15,9 +15,9 @@ export const getInitials = (name = "") =>
     .map((part) => part[0]?.toUpperCase() || "")
     .join("") || "NA";
 
-export const formatWorkerStatus = (status = "") => titleCase(status) || "Unknown";
+export const formatHeroStatus = (status = "") => titleCase(status) || "Unknown";
 
-export const getWorkerStatusClasses = (status = "") => {
+export const getHeroStatusClasses = (status = "") => {
   switch (status) {
     case "approved":
       return "bg-green-100 text-green-700";

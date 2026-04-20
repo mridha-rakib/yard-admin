@@ -16,7 +16,7 @@ import {
   formatBookingDateTime,
   getBookingStatusClasses,
   getBookingStatusLabel,
-  getBookingWorkerName,
+  getBookingHeroName,
 } from "../../lib/bookings";
 import {
   formatCurrency,
@@ -304,7 +304,7 @@ const CustomerDetails = () => {
                       Service
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                      Worker
+                      Hero
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                       Status
@@ -349,7 +349,7 @@ const CustomerDetails = () => {
                             <div className="text-xs text-gray-500">{booking.serviceType}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {getBookingWorkerName(booking)}
+                            {getBookingHeroName(booking)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span

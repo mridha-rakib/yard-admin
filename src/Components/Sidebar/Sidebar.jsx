@@ -35,7 +35,7 @@ const Sidebar = ({ closeDrawer }) => {
     },
     {
       icon: <ChartColumnIncreasing className="w-5 h-5" />,
-      label: "Workers",
+      label: "Heroes",
       Link: "/workers",
       matchPaths: ["/workers"],
     },

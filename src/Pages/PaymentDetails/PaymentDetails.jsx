@@ -7,8 +7,8 @@ const PaymentDetails = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const record = location.state?.record;
-  const workerName = record?.worker?.name || 'Unassigned';
-  const workerEmail = record?.worker?.email || 'No worker assigned';
+  const workerName = record?.worker?.name || 'No Hero connected';
+  const workerEmail = record?.worker?.email || 'No Hero connected';
   const workerInitials = getInitials(workerName);
   const hasRating = Number.isFinite(record?.rating) && record.rating > 0;
   const paymentMethodBadge = String(record?.paymentMethod || 'Unknown').slice(0, 12).toUpperCase();
@@ -38,6 +38,15 @@ const PaymentDetails = () => {
       </div>
     );
   }
+
+  const platformFeePercentage = Number(record.platformFeePercentage || 12);
+  const payoutPercentage = Math.max(0, 100 - platformFeePercentage);
+  const platformFee = Number(
+    record.platformFee ?? ((record.serviceAmount * platformFeePercentage) / 100).toFixed(2)
+  );
+  const heroPayout = Number(
+    record.workerPayout ?? (record.serviceAmount - platformFee - record.processingFee).toFixed(2)
+  );
 
   return (
     <div className="min-h-screen p-6 mt-16 bg-gray-50">
@@ -116,9 +125,9 @@ const PaymentDetails = () => {
               </div>
             </div>
 
-            {/* Worker Information */}
+            {/* Hero Information */}
             <div className="p-6 bg-white rounded-lg shadow">
-              <h2 className="mb-4 text-lg font-semibold">Worker Information</h2>
+              <h2 className="mb-4 text-lg font-semibold">Hero Information</h2>
               <div className="flex items-start mb-4">
                 <div className="flex items-center justify-center w-12 h-12 mr-3 font-semibold text-white rounded-full bg-gradient-to-br from-green-400 to-teal-500">
                   {workerInitials}
@@ -130,7 +139,7 @@ const PaymentDetails = () => {
                       <div className="font-medium">{workerName}</div>
                     </div>
                     <div>
-                      <div className="text-sm text-gray-500">Worker ID</div>
+                      <div className="text-sm text-gray-500">Hero ID</div>
                       <div className="font-medium">{record.workerId}</div>
                     </div>
                   </div>
@@ -180,16 +189,16 @@ const PaymentDetails = () => {
                   <span className="font-semibold">${record.serviceAmount.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between py-2">
-                  <span className="text-gray-600">Platform Fee (12%)</span>
-                  <span className="font-semibold">-${(record.serviceAmount * 0.12).toFixed(2)}</span>
+                  <span className="text-gray-600">Platform Fee ({platformFeePercentage}%)</span>
+                  <span className="font-semibold">-${platformFee.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b">
                   <span className="text-gray-600">Processing Fee</span>
                   <span className="font-semibold">-${record.processingFee.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between px-6 py-3 -mx-6 bg-gray-50">
-                  <span className="font-semibold">Worker Payout (88%)</span>
-                  <span className="text-xl font-bold">${(record.serviceAmount * 0.88 - record.processingFee).toFixed(2)}</span>
+                  <span className="font-semibold">Hero Payout ({payoutPercentage}%)</span>
+                  <span className="text-xl font-bold">${heroPayout.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -224,7 +233,7 @@ const PaymentDetails = () => {
                   <div className="font-medium">{record.processedAt}</div>
                 </div>
                 <div>
-                  <div className="mb-1 text-sm text-gray-500">Worker Payout Status</div>
+                  <div className="mb-1 text-sm text-gray-500">Hero Payout Status</div>
                   <div className="flex items-center">
                     <div className={`flex items-center px-3 py-1 rounded-full text-sm font-medium ${payoutStatusClasses}`}>
                       {record.payoutStatus === 'Paid' && (

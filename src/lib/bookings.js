@@ -5,17 +5,18 @@ export const BOOKING_PAGE_SIZE = 5;
 export const BOOKING_STATUS_OPTIONS = [
   { label: "All Status", value: "all" },
   { label: "New", value: "new" },
-  { label: "Assigned", value: "assigned" },
+  { label: "Accepted", value: "assigned" },
   { label: "In Progress", value: "in_progress" },
+  { label: "Awaiting Approval", value: "pending_verification" },
   { label: "Completed", value: "completed" },
   { label: "Cancelled", value: "cancelled" },
   { label: "Paid", value: "paid" },
 ];
 
 export const BOOKING_STATUS_UPDATE_OPTIONS = [
-  { label: "Assigned", value: "assigned" },
+  { label: "Accepted", value: "assigned" },
   { label: "In Progress", value: "in_progress" },
-  { label: "Completed", value: "completed" },
+  { label: "Awaiting Approval", value: "pending_verification" },
   { label: "Cancelled", value: "cancelled" },
 ];
 
@@ -23,14 +24,15 @@ export const BOOKING_URGENCY_OPTIONS = [
   { label: "All Urgency", value: "all" },
   { label: "Today", value: "today" },
   { label: "24 Hours", value: "within24" },
-  { label: "Scheduled", value: "scheduled" },
+  { label: "Booked", value: "scheduled" },
   { label: "Flexible", value: "flexible" },
 ];
 
 const STATUS_LABELS = {
   new: "New",
-  assigned: "Assigned",
+  assigned: "Accepted",
   in_progress: "In Progress",
+  pending_verification: "Awaiting Approval",
   completed: "Completed",
   cancelled: "Cancelled",
   paid: "Paid",
@@ -40,6 +42,7 @@ const STATUS_CLASSES = {
   new: "bg-gray-100 text-gray-700",
   assigned: "bg-blue-100 text-blue-700",
   in_progress: "bg-orange-100 text-orange-700",
+  pending_verification: "bg-yellow-100 text-yellow-700",
   completed: "bg-green-100 text-green-700",
   cancelled: "bg-red-100 text-red-700",
   paid: "bg-purple-100 text-purple-700",
@@ -49,7 +52,7 @@ const URGENCY_LABELS = {
   today: "Today",
   within24: "24 Hours",
   flexible: "Flexible",
-  scheduled: "Scheduled",
+  scheduled: "Booked",
 };
 
 const URGENCY_CLASSES = {
@@ -80,7 +83,7 @@ export const getBookingCustomerName = (job = {}) => job.customer?.name || job.fu
 
 export const getBookingCustomerEmail = (job = {}) => job.customer?.email || job.email || "No email";
 
-export const getBookingWorkerName = (job = {}) => job.assignedWorker?.name || "Unassigned";
+export const getBookingHeroName = (job = {}) => job.assignedWorker?.name || "No Hero connected";
 
 export const formatBookingLocation = (job = {}) =>
   [job.city, job.state, job.zipCode].filter(Boolean).join(", ") ||
@@ -102,7 +105,7 @@ export const getUrgencyClasses = (urgency = "") =>
 export const getPreferredTimeLabel = (preferredTime = "") =>
   PREFERRED_TIME_LABELS[preferredTime] || preferredTime || "Any time";
 
-export const formatBookingDate = (value) => formatDate(value) || "Not scheduled";
+export const formatBookingDate = (value) => formatDate(value) || "Not booked";
 
 export const formatBookingDateTime = (value) => formatDateTime(value) || "Pending";
 

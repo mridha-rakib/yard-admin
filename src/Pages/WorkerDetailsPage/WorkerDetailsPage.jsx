@@ -10,15 +10,15 @@ import {
   formatAvailability,
   formatDate,
   formatFullAddress,
-  formatWorkerStatus,
+  formatHeroStatus,
   getAccountStatusClasses,
-  getWorkerStatusClasses,
+  getHeroStatusClasses,
 } from "../../lib/workers";
 
-export default function WorkerDetailsPage() {
+export default function HeroDetailsPage() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [worker, setWorker] = useState(null);
+  const [worker, setHero] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState("");
   const [error, setError] = useState("");
@@ -26,15 +26,15 @@ export default function WorkerDetailsPage() {
   useEffect(() => {
     let ignore = false;
 
-    const loadWorker = async () => {
+    const loadHero = async () => {
       setIsLoading(true);
       setError("");
 
       try {
-        const data = await adminApi.getWorkerById(id);
+        const data = await adminApi.getHeroById(id);
 
         if (!ignore) {
-          setWorker(data);
+          setHero(data);
         }
       } catch (apiError) {
         if (!ignore) {
@@ -47,7 +47,7 @@ export default function WorkerDetailsPage() {
       }
     };
 
-    loadWorker();
+    loadHero();
 
     return () => {
       ignore = true;
@@ -62,46 +62,46 @@ export default function WorkerDetailsPage() {
     setActionLoading(action);
 
     try {
-      let updatedWorker = null;
-      let successMessage = "Worker updated successfully.";
+      let updatedHero = null;
+      let successMessage = "Hero updated successfully.";
 
       if (action === "approve") {
-        updatedWorker = await adminApi.approveWorker(worker._id);
-        successMessage = "Worker approved successfully.";
+        updatedHero = await adminApi.approveHero(worker._id);
+        successMessage = "Hero approved successfully.";
       }
 
       if (action === "reject") {
-        updatedWorker = await adminApi.rejectWorker(worker._id);
-        successMessage = "Worker rejected successfully.";
+        updatedHero = await adminApi.rejectHero(worker._id);
+        successMessage = "Hero rejected successfully.";
       }
 
       if (action === "suspend") {
-        updatedWorker = await adminApi.updateWorkerAccountStatus(worker._id, "suspended");
-        successMessage = "Worker suspended successfully.";
+        updatedHero = await adminApi.updateHeroAccountStatus(worker._id, "suspended");
+        successMessage = "Hero suspended successfully.";
       }
 
       if (action === "reactivate") {
-        updatedWorker = await adminApi.updateWorkerAccountStatus(worker._id, "active");
-        successMessage = "Worker reactivated successfully.";
+        updatedHero = await adminApi.updateHeroAccountStatus(worker._id, "active");
+        successMessage = "Hero reactivated successfully.";
       }
 
       if (action === "delete") {
         const confirmed = window.confirm(
-          "Delete this worker profile? This will revoke access, hide the worker from admin lists, and reopen any assigned jobs. This action cannot be undone."
+          "Delete this Hero profile? This will revoke access, hide the Hero from admin lists, and reopen any accepted jobs. This action cannot be undone."
         );
 
         if (!confirmed) {
           return;
         }
 
-        await adminApi.deleteWorker(worker._id);
-        message.success("Worker deleted successfully.");
+        await adminApi.deleteHero(worker._id);
+        message.success("Hero deleted successfully.");
         navigate("/workers", { replace: true });
         return;
       }
 
-      if (updatedWorker) {
-        setWorker(updatedWorker);
+      if (updatedHero) {
+        setHero(updatedHero);
         message.success(successMessage);
       }
     } catch (apiError) {
@@ -119,7 +119,7 @@ export default function WorkerDetailsPage() {
     return (
       <div className="min-h-screen p-6 mt-16 bg-gray-50">
         <div className="p-10 text-center text-gray-500 bg-white rounded-lg shadow-sm">
-          Loading worker details...
+          Loading Hero details...
         </div>
       </div>
     );
@@ -133,10 +133,10 @@ export default function WorkerDetailsPage() {
           className="flex items-center gap-2 mb-6 text-gray-600 transition hover:text-gray-900"
         >
           <ChevronLeft className="w-4 h-4" />
-          Back to Workers
+          Back to Heroes
         </button>
         <div className="p-10 text-center text-red-600 bg-white rounded-lg shadow-sm">
-          {error || "Worker not found."}
+          {error || "Hero not found."}
         </div>
       </div>
     );
@@ -155,7 +155,7 @@ export default function WorkerDetailsPage() {
           className="flex items-center gap-2 mb-6 text-gray-600 transition hover:text-gray-900"
         >
           <ChevronLeft className="w-4 h-4" />
-          Back to Workers
+          Back to Heroes
         </button>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -305,16 +305,16 @@ export default function WorkerDetailsPage() {
           <div className="lg:col-span-1">
             <div className="sticky p-6 space-y-6 bg-white rounded-lg shadow-sm top-6">
               <div>
-                <h2 className="mb-4 text-lg font-bold text-gray-900">Worker Overview</h2>
+                <h2 className="mb-4 text-lg font-bold text-gray-900">Hero Overview</h2>
                 <div className="space-y-3">
                   <div>
                     <label className="block mb-1 text-xs text-gray-500">Application Status</label>
                     <span
-                      className={`inline-flex px-2.5 py-1 rounded-md text-xs font-medium ${getWorkerStatusClasses(
+                      className={`inline-flex px-2.5 py-1 rounded-md text-xs font-medium ${getHeroStatusClasses(
                         worker.workerStatus
                       )}`}
                     >
-                      {formatWorkerStatus(worker.workerStatus)}
+                      {formatHeroStatus(worker.workerStatus)}
                     </span>
                   </div>
                   <div>
@@ -348,7 +348,7 @@ export default function WorkerDetailsPage() {
                       className="flex items-center justify-center w-full gap-2 px-4 py-2.5 text-sm font-medium text-white transition bg-green-600 rounded-lg hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       <CheckCircle className="w-4 h-4" />
-                      {actionLoading === "approve" ? "Approving..." : "Approve Worker"}
+                      {actionLoading === "approve" ? "Approving..." : "Approve Hero"}
                     </button>
                   ) : null}
 
@@ -359,7 +359,7 @@ export default function WorkerDetailsPage() {
                       className="flex items-center justify-center w-full gap-2 px-4 py-2.5 text-sm font-medium text-white transition bg-red-600 rounded-lg hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       <XCircle className="w-4 h-4" />
-                      {actionLoading === "reject" ? "Rejecting..." : "Reject Worker"}
+                      {actionLoading === "reject" ? "Rejecting..." : "Reject Hero"}
                     </button>
                   ) : null}
 
@@ -370,7 +370,7 @@ export default function WorkerDetailsPage() {
                       className="flex items-center justify-center w-full gap-2 px-4 py-2.5 text-sm font-medium text-gray-900 transition bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       <Pause className="w-4 h-4" />
-                      {actionLoading === "suspend" ? "Suspending..." : "Suspend Worker"}
+                      {actionLoading === "suspend" ? "Suspending..." : "Suspend Hero"}
                     </button>
                   ) : null}
 
@@ -381,7 +381,7 @@ export default function WorkerDetailsPage() {
                       className="flex items-center justify-center w-full gap-2 px-4 py-2.5 text-sm font-medium text-gray-900 transition bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       <Play className="w-4 h-4" />
-                      {actionLoading === "reactivate" ? "Reactivating..." : "Reactivate Worker"}
+                      {actionLoading === "reactivate" ? "Reactivating..." : "Reactivate Hero"}
                     </button>
                   ) : null}
 
@@ -391,7 +391,7 @@ export default function WorkerDetailsPage() {
                     className="flex items-center justify-center w-full gap-2 px-4 py-2.5 text-sm font-medium text-white transition bg-red-700 rounded-lg hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <Trash2 className="w-4 h-4" />
-                    {actionLoading === "delete" ? "Deleting..." : "Delete Worker"}
+                    {actionLoading === "delete" ? "Deleting..." : "Delete Hero"}
                   </button>
 
                 </div>

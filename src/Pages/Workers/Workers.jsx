@@ -7,9 +7,9 @@ import { getApiErrorMessage } from "../../lib/api/http";
 import {
   formatAvailability,
   formatLocation,
-  formatWorkerStatus,
+  formatHeroStatus,
   getInitials,
-  getWorkerStatusClasses,
+  getHeroStatusClasses,
 } from "../../lib/workers";
 
 const ITEMS_PER_PAGE = 5;
@@ -32,13 +32,13 @@ const buildVisiblePages = (currentPage, totalPages) => {
     .sort((left, right) => left - right);
 };
 
-const Workers = () => {
+const Heroes = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [skillFilter, setSkillFilter] = useState("all");
-  const [workers, setWorkers] = useState([]);
+  const [Heroes, setHeroes] = useState([]);
   const [skills, setSkills] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({
@@ -62,11 +62,11 @@ const Workers = () => {
   useEffect(() => {
     let ignore = false;
 
-    const loadWorkerFilters = async () => {
+    const loadHeroFilters = async () => {
       setIsMetaLoading(true);
 
       try {
-        const data = await adminApi.getWorkerFilters();
+        const data = await adminApi.getHeroFilters();
 
         if (!ignore) {
           setSkills(data.skills || []);
@@ -82,7 +82,7 @@ const Workers = () => {
       }
     };
 
-    loadWorkerFilters();
+    loadHeroFilters();
 
     return () => {
       ignore = true;
@@ -92,7 +92,7 @@ const Workers = () => {
   useEffect(() => {
     let ignore = false;
 
-    const loadWorkers = async () => {
+    const loadHeroes = async () => {
       setIsLoading(true);
       setError("");
 
@@ -114,15 +114,15 @@ const Workers = () => {
           params.skill = skillFilter;
         }
 
-        const response = await adminApi.listWorkers(params);
+        const response = await adminApi.listHeroes(params);
 
         if (!ignore) {
-          setWorkers(response.items);
+          setHeroes(response.items);
           setPagination(response.pagination);
         }
       } catch (apiError) {
         if (!ignore) {
-          setWorkers([]);
+          setHeroes([]);
           setPagination((current) => ({ ...current, total: 0, totalPages: 1 }));
           setError(getApiErrorMessage(apiError));
         }
@@ -133,14 +133,14 @@ const Workers = () => {
       }
     };
 
-    loadWorkers();
+    loadHeroes();
 
     return () => {
       ignore = true;
     };
   }, [currentPage, debouncedSearchTerm, skillFilter, statusFilter]);
 
-  const handleViewWorker = (workerId) => {
+  const handleViewHero = (workerId) => {
     navigate(`/workers/${workerId}`);
   };
 
@@ -167,7 +167,7 @@ const Workers = () => {
   return (
     <div className="min-h-screen p-6 mt-16 bg-gray-50">
       <div className="mx-auto">
-        <h1 className="mb-6 text-2xl font-bold text-gray-900">Workers Management</h1>
+        <h1 className="mb-6 text-2xl font-bold text-gray-900">Heroes Management</h1>
 
         <div className="p-4 mb-4 bg-white rounded-lg shadow-sm">
           <div className="flex flex-wrap gap-4">
@@ -176,7 +176,7 @@ const Workers = () => {
                 <Search className="absolute w-4 h-4 text-gray-400 -translate-y-1/2 left-3 top-1/2" />
                 <input
                   type="text"
-                  placeholder="Search by worker name, email, or phone..."
+                  placeholder="Search by Hero name, email, or phone..."
                   value={searchTerm}
                   onChange={handleSearchChange}
                   className="w-full py-2 pl-10 pr-4 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
@@ -218,7 +218,7 @@ const Workers = () => {
               <thead className="border-b border-gray-200 bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                    Worker
+                    Hero
                   </th>
                   <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                     Age
@@ -244,7 +244,7 @@ const Workers = () => {
                 {isLoading ? (
                   <tr>
                     <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
-                      Loading workers...
+                      Loading Heroes...
                     </td>
                   </tr>
                 ) : error ? (
@@ -253,14 +253,14 @@ const Workers = () => {
                       {error}
                     </td>
                   </tr>
-                ) : workers.length === 0 ? (
+                ) : Heroes.length === 0 ? (
                   <tr>
                     <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
-                      No workers found
+                      No Heroes found
                     </td>
                   </tr>
                 ) : (
-                  workers.map((worker) => (
+                  Heroes.map((worker) => (
                     <tr key={worker._id} className="transition hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
@@ -307,16 +307,16 @@ const Workers = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`px-2.5 py-1 rounded-md text-xs font-medium ${getWorkerStatusClasses(
+                          className={`px-2.5 py-1 rounded-md text-xs font-medium ${getHeroStatusClasses(
                             worker.workerStatus
                           )}`}
                         >
-                          {formatWorkerStatus(worker.workerStatus)}
+                          {formatHeroStatus(worker.workerStatus)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button
-                          onClick={() => handleViewWorker(worker._id)}
+                          onClick={() => handleViewHero(worker._id)}
                           className="p-1 text-gray-600 transition hover:text-gray-700"
                           title="View Details"
                         >
@@ -381,4 +381,4 @@ const Workers = () => {
   );
 };
 
-export default Workers;
+export default Heroes;

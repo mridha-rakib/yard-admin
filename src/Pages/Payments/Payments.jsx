@@ -41,12 +41,12 @@ const statCardConfig = [
       `${Number(summary?.paidCount || 0).toLocaleString()} completed payments`,
   },
   {
-    key: "totalWorkerPayout",
-    title: "Worker Payouts",
+    key: "totalHeroPayout",
+    title: "Hero Payouts",
     iconClasses: "bg-purple-100 text-purple-600",
     iconPath:
       "M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z",
-    subtitle: () => "Projected worker payout amount",
+    subtitle: () => "Projected Hero payout amount",
   },
   {
     key: "pendingPayments",
@@ -162,11 +162,11 @@ const Payments = () => {
       "Job ID",
       "Customer Name",
       "Customer Email",
-      "Worker Name",
-      "Worker Email",
+      "Hero Name",
+      "Hero Email",
       "Total Amount",
       "Platform Fee",
-      "Worker Payout",
+      "Hero Payout",
       "Payment Method",
       "Status",
       "Processed At",
@@ -263,7 +263,7 @@ const Payments = () => {
                     setSearchTerm(event.target.value);
                     setCurrentPage(1);
                   }}
-                  placeholder="Search by job ID, customer, or worker..."
+                  placeholder="Search by job ID, customer, or Hero..."
                   className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-gray-900"
                 />
               </div>
@@ -330,7 +330,7 @@ const Payments = () => {
                     Customer
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Worker
+                    Hero
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                     Total Amount
@@ -339,7 +339,7 @@ const Payments = () => {
                     Platform Fee
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Worker Payout
+                    Hero Payout
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                     Payment Method

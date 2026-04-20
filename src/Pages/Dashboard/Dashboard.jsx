@@ -10,9 +10,9 @@ import {
 } from "../../lib/bookings";
 import {
   formatLocation,
-  formatWorkerStatus,
+  formatHeroStatus,
   getInitials,
-  getWorkerStatusClasses,
+  getHeroStatusClasses,
 } from "../../lib/workers";
 
 const formatCurrency = (value) =>
@@ -70,8 +70,8 @@ const Dashboard = () => {
       iconColor: "text-blue-600",
     },
     {
-      title: "Active Workers",
-      value: Number(dashboard?.activeWorkers || 0).toLocaleString(),
+      title: "Active Heroes",
+      value: Number(dashboard?.activeHeroes || 0).toLocaleString(),
       change: "Approved and active accounts",
       icon: Users,
       bgColor: "bg-green-50",
@@ -192,7 +192,7 @@ const Dashboard = () => {
 
           <div className="rounded-lg bg-white p-6 shadow-sm">
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">New Worker Applications</h2>
+              <h2 className="text-xl font-bold text-gray-900">New Hero Applications</h2>
               <button
                 type="button"
                 onClick={() => navigate("/workers")}
@@ -203,8 +203,8 @@ const Dashboard = () => {
             </div>
 
             <div className="space-y-4">
-              {dashboard?.recentWorkerApplications?.length ? (
-                dashboard.recentWorkerApplications.map((worker) => (
+              {dashboard?.recentHeroApplications?.length ? (
+                dashboard.recentHeroApplications.map((worker) => (
                   <button
                     key={worker._id}
                     type="button"
@@ -221,17 +221,17 @@ const Dashboard = () => {
                       </div>
                     </div>
                     <span
-                      className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getWorkerStatusClasses(
+                      className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getHeroStatusClasses(
                         worker.workerStatus
                       )}`}
                     >
-                      {formatWorkerStatus(worker.workerStatus)}
+                      {formatHeroStatus(worker.workerStatus)}
                     </span>
                   </button>
                 ))
               ) : (
                 <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500">
-                  No worker applications found.
+                  No Hero applications found.
                 </div>
               )}
             </div>
@@ -255,7 +255,7 @@ const Dashboard = () => {
               className="flex items-center justify-center gap-3 rounded-lg bg-[#0A3019] px-6 py-4 font-semibold text-white transition hover:bg-[#114026]"
             >
               <User className="h-5 w-5" />
-              Review Worker Applications
+              Review Hero Applications
             </button>
             <button
               type="button"

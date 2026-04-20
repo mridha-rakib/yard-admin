@@ -25,16 +25,16 @@ const unwrapCollectionWithSummary = (response) => ({
 
 export const adminApi = {
   getDashboardStats: () => apiClient.get("/admin/dashboard").then(unwrapData),
-  listWorkers: (params = {}) =>
+  listHeroes: (params = {}) =>
     apiClient.get("/admin/workers", { params }).then(unwrapCollection),
-  getWorkerFilters: () => apiClient.get("/admin/workers/meta").then(unwrapData),
-  getWorkerById: (workerId) => apiClient.get(`/admin/workers/${workerId}`).then(unwrapData),
-  approveWorker: (workerId) =>
+  getHeroFilters: () => apiClient.get("/admin/workers/meta").then(unwrapData),
+  getHeroById: (workerId) => apiClient.get(`/admin/workers/${workerId}`).then(unwrapData),
+  approveHero: (workerId) =>
     apiClient.patch(`/admin/workers/${workerId}/approve`).then(unwrapData),
-  rejectWorker: (workerId) =>
+  rejectHero: (workerId) =>
     apiClient.patch(`/admin/workers/${workerId}/reject`).then(unwrapData),
-  deleteWorker: (workerId) => apiClient.delete(`/admin/workers/${workerId}`).then(unwrapData),
-  updateWorkerAccountStatus: (workerId, status) =>
+  deleteHero: (workerId) => apiClient.delete(`/admin/workers/${workerId}`).then(unwrapData),
+  updateHeroAccountStatus: (workerId, status) =>
     apiClient
       .patch(`/admin/workers/${workerId}/account-status`, { status })
       .then(unwrapData),
@@ -48,6 +48,10 @@ export const adminApi = {
   getBookingById: (jobId) => apiClient.get(`/admin/bookings/${jobId}`).then(unwrapData),
   updateBookingStatus: (bookingId, status) =>
     apiClient.patch(`/admin/bookings/${bookingId}/status`, { status }).then(unwrapData),
+  approveBookingCompletion: (bookingId, reviewNotes = "") =>
+    apiClient
+      .patch(`/admin/bookings/${bookingId}/approve-completion`, { reviewNotes })
+      .then(unwrapData),
   getSettings: () => apiClient.get("/admin/settings").then(unwrapData),
   updateSettings: (payload) => apiClient.patch("/admin/settings", payload).then(unwrapData),
   updateCurrentProfile: (payload) => apiClient.patch("/users/profile", payload).then(unwrapData),

@@ -28,7 +28,7 @@ import {
   getBookingIdLabel,
   getBookingStatusClasses,
   getBookingStatusLabel,
-  getBookingWorkerName,
+  getBookingHeroName,
   getUrgencyClasses,
   getUrgencyLabel,
 } from "../../lib/bookings";
@@ -43,6 +43,8 @@ const BookingDetails = () => {
   const [statusDraft, setStatusDraft] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [isApprovingCompletion, setIsApprovingCompletion] = useState(false);
+  const [reviewNotes, setReviewNotes] = useState("");
   const [error, setError] = useState("");
   const [requestVersion, setRequestVersion] = useState(0);
 
@@ -65,6 +67,7 @@ const BookingDetails = () => {
         if (!ignore) {
           setJob(data);
           setStatusDraft(data.booking?.status || "");
+          setReviewNotes(data.booking?.verificationNotes || "");
         }
       } catch (apiError) {
         if (!ignore) {
@@ -106,6 +109,24 @@ const BookingDetails = () => {
     }
   };
 
+  const handleApproveCompletion = async () => {
+    if (!job?.booking?._id) {
+      return;
+    }
+
+    setIsApprovingCompletion(true);
+
+    try {
+      await adminApi.approveBookingCompletion(job.booking._id, reviewNotes);
+      message.success("Completion approved and payment release triggered.");
+      setRequestVersion((currentValue) => currentValue + 1);
+    } catch (apiError) {
+      message.error(getApiErrorMessage(apiError));
+    } finally {
+      setIsApprovingCompletion(false);
+    }
+  };
+
   const timelineItems = useMemo(() => {
     if (!job) {
       return [];
@@ -118,7 +139,7 @@ const BookingDetails = () => {
         complete: true,
       },
       {
-        label: "Worker assigned",
+        label: "Hero accepted",
         value: job.booking?.createdAt ? formatBookingDateTime(job.booking.createdAt) : "Pending",
         complete: Boolean(job.booking?._id),
       },
@@ -128,11 +149,18 @@ const BookingDetails = () => {
         complete: Boolean(job.booking?.startedAt),
       },
       {
-        label: "Work completed",
-        value: job.booking?.completedAt
-          ? formatBookingDateTime(job.booking.completedAt)
+        label: "Proof submitted",
+        value: job.booking?.verificationSubmittedAt
+          ? formatBookingDateTime(job.booking.verificationSubmittedAt)
           : "Pending",
-        complete: Boolean(job.booking?.completedAt),
+        complete: Boolean(job.booking?.verificationSubmittedAt),
+      },
+      {
+        label: "Approved",
+        value: job.booking?.verificationApprovedAt
+          ? formatBookingDateTime(job.booking.verificationApprovedAt)
+          : "Pending",
+        complete: Boolean(job.booking?.verificationApprovedAt),
       },
       {
         label: "Payment received",
@@ -173,7 +201,7 @@ const BookingDetails = () => {
 
   const customerName = getBookingCustomerName(job);
   const customerEmail = getBookingCustomerEmail(job);
-  const workerName = getBookingWorkerName(job);
+  const workerName = getBookingHeroName(job);
   const paymentAmount = job.payment?.amount || job.estimatedPrice || 0;
   const platformFee = job.payment?.platformFee || 0;
   const workerPayout =
@@ -267,7 +295,7 @@ const BookingDetails = () => {
                   <div className="flex items-start gap-3">
                     <Clock3 className="mt-0.5 h-5 w-5 text-gray-500" />
                     <div>
-                      <p className="text-sm font-semibold text-gray-900">Preferred schedule</p>
+                      <p className="text-sm font-semibold text-gray-900">Preferred time</p>
                       <p className="mt-1 text-sm text-gray-600">
                         {formatPreferredSchedule(job)}
                       </p>
@@ -373,11 +401,60 @@ const BookingDetails = () => {
                 </div>
               )}
             </section>
+
+            {(Array.isArray(job.booking?.verificationPhotoUrls) &&
+              job.booking.verificationPhotoUrls.length > 0) ||
+            job.booking?.verificationVideoUrl ? (
+              <section className="rounded-lg bg-white p-6 shadow-sm">
+                <h3 className="text-lg font-bold text-gray-900">Completion Verification</h3>
+                <p className="mt-2 text-sm text-gray-500">
+                  Review the worker proof before approving payout release.
+                </p>
+
+                {Array.isArray(job.booking?.verificationPhotoUrls) &&
+                job.booking.verificationPhotoUrls.length > 0 ? (
+                  <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                    {job.booking.verificationPhotoUrls.map((photo, index) => (
+                      <div
+                        key={`${photo}-${index}`}
+                        className="overflow-hidden rounded-lg border border-gray-200 bg-gray-50"
+                      >
+                        <img
+                          src={photo}
+                          alt={`Verification photo ${index + 1}`}
+                          className="h-48 w-full object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+
+                {job.booking?.verificationVideoUrl ? (
+                  <div className="mt-5 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                    <p className="text-sm font-semibold text-gray-900">Verification video</p>
+                    <video
+                      controls
+                      src={job.booking.verificationVideoUrl}
+                      className="mt-4 max-h-[360px] w-full rounded-lg bg-black"
+                    />
+                  </div>
+                ) : null}
+
+                {job.booking?.workerCompletionNotes ? (
+                  <div className="mt-5 rounded-lg border border-gray-200 bg-gray-50 px-4 py-4">
+                    <p className="text-sm font-semibold text-gray-900">Hero notes</p>
+                    <p className="mt-2 text-sm text-gray-700">
+                      {job.booking.workerCompletionNotes}
+                    </p>
+                  </div>
+                ) : null}
+              </section>
+            ) : null}
           </div>
 
           <aside className="space-y-6">
             <section className="rounded-lg bg-white p-6 shadow-sm">
-              <h3 className="text-lg font-bold text-gray-900">Worker Information</h3>
+              <h3 className="text-lg font-bold text-gray-900">Hero Information</h3>
               {job.assignedWorker ? (
                 <div className="mt-5 space-y-4">
                   <div className="flex items-start gap-3">
@@ -407,7 +484,7 @@ const BookingDetails = () => {
                 </div>
               ) : (
                 <div className="mt-5 rounded-lg border border-gray-200 bg-gray-50 px-4 py-4 text-sm leading-7 text-gray-600">
-                  This request has not been assigned to a worker yet.
+                  This request has not been accepted by a Hero yet.
                 </div>
               )}
             </section>
@@ -428,7 +505,7 @@ const BookingDetails = () => {
                   </span>
                 </div>
                 <div className="flex items-center justify-between border-t border-gray-200 pt-3 text-sm">
-                  <span className="text-gray-600">Worker payout</span>
+                  <span className="text-gray-600">Hero payout</span>
                   <span className="font-semibold text-gray-900">
                     {formatCurrency(workerPayout)}
                   </span>
@@ -482,6 +559,34 @@ const BookingDetails = () => {
               <h3 className="text-lg font-bold text-gray-900">Admin Actions</h3>
 
               <div className="mt-5 space-y-4">
+                {job.booking?.status === "pending_verification" ? (
+                  <>
+                    <div className="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
+                      This booking is waiting for proof review. Approving it will attempt to capture the held customer payment and release payout.
+                    </div>
+
+                    <label className="block text-sm font-medium text-gray-700">
+                      Review notes
+                      <textarea
+                        rows={4}
+                        value={reviewNotes}
+                        onChange={(event) => setReviewNotes(event.target.value)}
+                        className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-green-700"
+                        placeholder="Optional notes for approval or internal record."
+                      />
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={handleApproveCompletion}
+                      disabled={isApprovingCompletion}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#0A3019] px-4 py-3 text-sm font-medium text-white transition hover:bg-[#0d3d20] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isApprovingCompletion ? "Approving..." : "Approve and Release Payout"}
+                    </button>
+                  </>
+                ) : null}
+
                 <div>
                   <label className="mb-2 block text-sm font-medium text-gray-700">
                     Update booking status
@@ -519,7 +624,7 @@ const BookingDetails = () => {
 
                 {!canUpdateStatus ? (
                   <div className="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
-                    This job has not been assigned yet, so there is no booking record to update.
+                    This job has not been accepted yet, so there is no booking record to update.
                   </div>
                 ) : null}
 
@@ -548,7 +653,7 @@ const BookingDetails = () => {
                   <p className="text-sm font-semibold text-blue-900">Internal note</p>
                   <p className="mt-1 text-sm leading-6 text-blue-800">
                     Use this page to monitor job progress. Operational status updates work only
-                    after a worker has accepted the request and a booking record exists.
+                    after a Hero has accepted the request and a booking record exists.
                   </p>
                 </div>
               </div>
