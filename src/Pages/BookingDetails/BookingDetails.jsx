@@ -16,6 +16,7 @@ import {
 import { message } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
 import { adminApi } from "../../lib/api/admin-api";
+import { API_ORIGIN } from "../../lib/api/config";
 import { getApiErrorMessage } from "../../lib/api/http";
 import {
   BOOKING_STATUS_UPDATE_OPTIONS,
@@ -35,6 +36,27 @@ import {
 import { getInitials } from "../../lib/workers";
 
 const formatCurrency = (value) => `$${Number(value || 0).toFixed(2)}`;
+const resolveProofMediaUrl = (value = "") => {
+  const normalizedValue = String(value || "").trim();
+
+  if (!normalizedValue) {
+    return "";
+  }
+
+  if (
+    normalizedValue.startsWith("data:") ||
+    normalizedValue.startsWith("http://") ||
+    normalizedValue.startsWith("https://")
+  ) {
+    return normalizedValue;
+  }
+
+  if (normalizedValue.startsWith("/")) {
+    return `${API_ORIGIN}${normalizedValue}`;
+  }
+
+  return normalizedValue;
+};
 
 const BookingDetails = () => {
   const navigate = useNavigate();
@@ -434,7 +456,7 @@ const BookingDetails = () => {
                     <p className="text-sm font-semibold text-gray-900">Verification video</p>
                     <video
                       controls
-                      src={job.booking.verificationVideoUrl}
+                      src={resolveProofMediaUrl(job.booking.verificationVideoUrl)}
                       className="mt-4 max-h-[360px] w-full rounded-lg bg-black"
                     />
                   </div>

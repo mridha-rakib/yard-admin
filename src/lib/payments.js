@@ -180,6 +180,24 @@ export const mapPaymentRecord = (payment = {}) => {
         : payment.status === "authorized"
           ? formatDate(payment.authorizedAt) || "Pending"
           : "Pending",
+    refundAmount: toNumber(payment?.stripeRefundAmount),
+    refundStatus: payment?.stripeRefundStatus || "",
+    refundReason: payment?.refundReason || "",
+    refundFailureReason: payment?.refundFailureReason || "",
+    refundedAt: formatDateTime(payment?.refundedAt) || "",
+    remainingRefundableAmount: Math.max(
+      0,
+      Number(payment?.amount || 0) - toNumber(payment?.stripeRefundAmount)
+    ),
+    transferReversedAmount: toNumber(payment?.stripeTransferReversedAmount),
+    disputeId: payment?.stripeDisputeId || "",
+    disputeStatus: payment?.stripeDisputeStatus || "",
+    disputeReason: payment?.stripeDisputeReason || "",
+    disputeAmount: toNumber(payment?.stripeDisputeAmount),
+    disputeEvidenceDueBy: formatDateTime(payment?.stripeDisputeEvidenceDueBy) || "",
+    disputeSubmittedAt: formatDateTime(payment?.stripeDisputeSubmittedAt) || "",
+    disputeLastAction: payment?.stripeDisputeLastAction || "",
+    disputeOutcome: payment?.stripeDisputeOutcome || "",
     cardEnding: "N/A",
     rawPayment: payment,
   };

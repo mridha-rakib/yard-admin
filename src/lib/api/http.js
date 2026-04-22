@@ -7,7 +7,16 @@ import {
   patchStoredAuthSession,
 } from "./auth-session";
 
+const DEFAULT_API_TIMEOUT_MS = 30000;
+
 export const getApiErrorMessage = (error) =>
+  error?.code === "ECONNABORTED" || String(error?.message || "").toLowerCase().includes("timeout")
+    ? String(error?.config?.url || "").includes("/admin/dashboard")
+      ? "Loading dashboard data is taking longer than expected. Please refresh and try again."
+      : String(error?.config?.url || "").includes("/admin")
+        ? "Loading admin data is taking longer than expected. Please try again."
+        : "The request is taking longer than expected. Please try again."
+    :
   error?.response?.data?.message ||
   error?.response?.data?.error ||
   error?.message ||
@@ -15,12 +24,12 @@ export const getApiErrorMessage = (error) =>
 
 export const publicApi = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 15000,
+  timeout: DEFAULT_API_TIMEOUT_MS,
 });
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 15000,
+  timeout: DEFAULT_API_TIMEOUT_MS,
 });
 
 let refreshRequest = null;

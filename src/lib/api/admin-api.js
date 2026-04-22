@@ -43,6 +43,13 @@ export const adminApi = {
   getCustomerById: (customerId) => apiClient.get(`/admin/customers/${customerId}`).then(unwrapData),
   listPayments: (params = {}) =>
     apiClient.get("/admin/payments", { params }).then(unwrapCollectionWithSummary),
+  getPaymentById: (paymentId) => apiClient.get(`/payments/${paymentId}`).then(unwrapData),
+  refundPayment: (paymentId, payload) =>
+    apiClient.post(`/payments/${paymentId}/refund`, payload).then(unwrapData),
+  acceptDispute: (paymentId) =>
+    apiClient.post(`/payments/${paymentId}/dispute/accept`).then(unwrapData),
+  submitDisputeEvidence: (paymentId, payload) =>
+    apiClient.post(`/payments/${paymentId}/dispute/respond`, payload).then(unwrapData),
   listBookings: (params = {}) =>
     apiClient.get("/admin/bookings", { params }).then(unwrapCollection),
   getBookingById: (jobId) => apiClient.get(`/admin/bookings/${jobId}`).then(unwrapData),
