@@ -34,6 +34,7 @@ export const clonePricingCategories = () => [
     title: "Vehicle Convenience Services",
     subtitle: "Flat-rate services at the customer's location.",
     services: [
+      { id: "test-live-payment", title: "Live Payment Test Job", pricingRule: "$2 fixed price" },
       { id: "vehicle-gas-filling", title: "Gas Filling", pricingRule: "$25 fixed price" },
       { id: "vehicle-washer-fluid", title: "Windshield Washer Fluid Refill", pricingRule: "$15 fixed price" },
       { id: "vehicle-tire-air", title: "Tire Air Fill", pricingRule: "$10 fixed price" },
