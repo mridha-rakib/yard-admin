@@ -183,7 +183,7 @@ const PaymentDetails = () => {
     record.platformFee ?? ((record.serviceAmount * platformFeePercentage) / 100).toFixed(2)
   );
   const heroPayout = Number(
-    record.workerPayout ?? (record.serviceAmount - platformFee - record.processingFee).toFixed(2)
+    record.workerPayout ?? (record.serviceAmount - platformFee).toFixed(2)
   );
 
   return (
