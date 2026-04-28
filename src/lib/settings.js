@@ -59,7 +59,7 @@ export const normalizePlatformInfo = (platformInfo = {}) => ({
 });
 
 export const normalizePaymentSettings = (paymentSettings = {}) => ({
-  platformFee: Number(paymentSettings?.platformFee ?? DEFAULT_PAYMENT_SETTINGS.platformFee),
+  platformFee: DEFAULT_PAYMENT_SETTINGS.platformFee,
   minimumServiceAmount: Number(
     paymentSettings?.minimumServiceAmount ?? DEFAULT_PAYMENT_SETTINGS.minimumServiceAmount
   ),

@@ -118,6 +118,8 @@ export const buildVisiblePages = (currentPage, totalPages) => {
 
 export const mapPaymentRecord = (payment = {}) => {
   const totalAmount = toNumber(payment.amount);
+  const serviceAmount = toNumber(payment.jobSubtotal || payment.amount);
+  const bookingFee = toNumber(payment.bookingFee);
   const platformFee = toNumber(payment.platformFee);
   const workerPayout = toNumber(payment.workerPayout);
   const platformFeePercentage = toNumber(payment.platformFeePercentage);
@@ -142,6 +144,7 @@ export const mapPaymentRecord = (payment = {}) => {
       email: payment?.worker?.email || "No Hero connected",
     },
     totalAmount,
+    bookingFee,
     platformFee,
     platformFeePercentage,
     workerPayout,
@@ -165,7 +168,7 @@ export const mapPaymentRecord = (payment = {}) => {
     phone: payment?.customer?.phone || "No phone available",
     workerId: buildShortId("HERO", payment?.worker?._id),
     rating: null,
-    serviceAmount: totalAmount,
+    serviceAmount,
     processingFee: 0,
     transactionId:
       payment?.stripePaymentIntentId ||

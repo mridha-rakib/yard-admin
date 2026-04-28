@@ -409,11 +409,12 @@ const Settings = () => {
                     min="0"
                     step="0.01"
                     value={paymentSettings.platformFee}
-                    onChange={(event) =>
-                      handlePaymentChange("platformFee", event.target.value)
-                    }
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-green-700"
+                    readOnly
+                    className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm text-gray-600 outline-none"
                   />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Fixed globally at 12% for all services and future listings.
+                  </p>
                 </div>
 
                 <div>

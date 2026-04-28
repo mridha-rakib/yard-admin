@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { message } from "antd";
 import { useNavigate } from "react-router-dom";
-import brandlogo from "../../../assets/image/logo_yard.png";
+import brandlogo from "../../../assets/image/yard-new.jpeg";
 import { authApi } from "../../../lib/api/auth-api";
 import {
   getPasswordRecoveryState,
@@ -126,7 +126,7 @@ const VerifyCode = () => {
     <div className="flex items-center justify-center min-h-screen bg-[#f9fafb]">
       <div className="py-10 md:py-12 mx-2 md:mx-0 px-6 md:px-10 rounded-2xl w-[580px] bg-white border-2 border-[#eef6ff]">
         <div className="flex justify-center">
-          <img className="w-auto" src={brandlogo} alt="brandlogo" />
+          <img className="h-20 w-20 rounded-xl object-cover" src={brandlogo} alt="Yard admin logo" />
         </div>
         <h1 className="text-2xl font-medium text-gray-900">Verify your code</h1>
         <p className="mt-4 text-gray-600">

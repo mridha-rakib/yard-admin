@@ -1,7 +1,7 @@
 import { FiLogOut } from "react-icons/fi";
 import { BiChevronDown } from "react-icons/bi";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import brandlogo from "../../assets/image/yard_logo.png";
+import brandlogo from "../../assets/image/yard-new.jpeg";
 import {
   AlignCenterVertical,
   ChartColumnIncreasing,
@@ -94,7 +94,7 @@ const Sidebar = ({ closeDrawer }) => {
     <div className="flex h-full w-72 flex-col bg-[#0a3019]">
       <div className="border-b-2 border-[#166534]">
          <div className="px-8 py-5 ">
-        <img src={brandlogo} alt="logo" className="w-auto" />
+        <img src={brandlogo} alt="Yard admin logo" className="h-14 w-14 rounded-lg object-cover" />
       </div>
       </div>
 

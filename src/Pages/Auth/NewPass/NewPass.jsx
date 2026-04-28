@@ -3,7 +3,7 @@ import { FaRegEyeSlash } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa6";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import brandlogo from "../../../assets/image/logo_yard.png";
+import brandlogo from "../../../assets/image/yard-new.jpeg";
 import { authApi } from "../../../lib/api/auth-api";
 import {
   clearPasswordRecoveryState,
@@ -79,7 +79,7 @@ const NewPass = () => {
           >
             <div className="mx-auto">
               <div className="flex justify-center">
-                <img src={brandlogo} alt="brandlogo" className="w-auto my-3" />
+                <img src={brandlogo} alt="Yard admin logo" className="my-3 h-20 w-20 rounded-xl object-cover" />
               </div>
               <h2 className="mb-4 text-2xl font-bold text-gray-700 md:text-3xl">
                 Create new password

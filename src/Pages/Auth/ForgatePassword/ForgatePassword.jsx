@@ -1,7 +1,7 @@
 import { Form, Input, message } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import brandlogo from "../../../assets/image/logo_yard.png";
+import brandlogo from "../../../assets/image/yard-new.jpeg";
 import { authApi } from "../../../lib/api/auth-api";
 import {
   clearPasswordRecoveryState,
@@ -41,7 +41,7 @@ const ForgatePassword = () => {
     <div className="flex items-center justify-center min-h-screen bg-[#f9fafb]">
       <div className="py-10 md:py-12 mx-2 md:mx-0 px-6 md:px-10 rounded-2xl w-[580px] bg-white border-2 border-[#eef6ff] mt-10">
         <div className="flex justify-center">
-          <img className="w-auto" src={brandlogo} alt="brandlogo" />
+          <img className="h-20 w-20 rounded-xl object-cover" src={brandlogo} alt="Yard admin logo" />
         </div>
         <h1 className="my-2 font-bold text-2xl text-gray-900">Forgot password</h1>
         <p className="mb-4 text-gray-600">

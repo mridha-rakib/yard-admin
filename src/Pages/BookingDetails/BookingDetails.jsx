@@ -224,7 +224,9 @@ const BookingDetails = () => {
   const customerName = getBookingCustomerName(job);
   const customerEmail = getBookingCustomerEmail(job);
   const workerName = getBookingHeroName(job);
-  const paymentAmount = job.payment?.amount || job.estimatedPrice || 0;
+  const paymentAmount = job.payment?.jobSubtotal || job.estimatedPrice || 0;
+  const bookingFee = Number(job.payment?.bookingFee || 0);
+  const customerTotal = job.payment?.amount || paymentAmount + bookingFee;
   const platformFee = job.payment?.platformFee || 0;
   const workerPayout =
     job.payment?.workerPayout ?? Number((paymentAmount - platformFee).toFixed(2));
@@ -515,9 +517,21 @@ const BookingDetails = () => {
               <h3 className="text-lg font-bold text-gray-900">Payment Summary</h3>
               <div className="mt-5 space-y-3">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Customer payment</span>
+                  <span className="text-gray-600">Job subtotal</span>
                   <span className="font-semibold text-gray-900">
                     {formatCurrency(paymentAmount)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Booking fee</span>
+                  <span className="font-semibold text-gray-900">
+                    {formatCurrency(bookingFee)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Customer total</span>
+                  <span className="font-semibold text-gray-900">
+                    {formatCurrency(customerTotal)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">

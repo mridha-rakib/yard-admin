@@ -59,6 +59,8 @@ export const adminApi = {
     apiClient
       .patch(`/admin/bookings/${bookingId}/approve-completion`, { reviewNotes })
       .then(unwrapData),
+  getPricingRules: () => apiClient.get("/admin/pricing").then(unwrapData),
+  updatePricingRules: (payload) => apiClient.put("/admin/pricing", payload).then(unwrapData),
   getSettings: () => apiClient.get("/admin/settings").then(unwrapData),
   updateSettings: (payload) => apiClient.patch("/admin/settings", payload).then(unwrapData),
   updateCurrentProfile: (payload) => apiClient.patch("/users/profile", payload).then(unwrapData),

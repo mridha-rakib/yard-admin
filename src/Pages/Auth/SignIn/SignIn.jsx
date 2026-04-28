@@ -2,7 +2,7 @@ import { Checkbox, Form, Input, Typography, message } from "antd";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
-import brandlogo from "../../../assets/image/logo_yard.png";
+import brandlogo from "../../../assets/image/yard-new.jpeg";
 import { useAuthStore } from "../../../stores/use-auth-store";
 
 const SignIn = () => {
@@ -57,7 +57,7 @@ const SignIn = () => {
               className="py-5 md:py-12 mx-2 md:mx-0 px-6 md:px-10 rounded-2xl w-[580px] h-[525px] bg-white border-2 border-[#eef6ff] "
             >
          <div className="flex justify-center ">
-           <img src={brandlogo} className="w-auto" alt="brandlogo"/>
+           <img src={brandlogo} className="h-20 w-20 rounded-xl object-cover" alt="Yard admin logo"/>
          </div>
               <div className="text-center ">
                 <Typography.Text className="text-base text-center text-black ">

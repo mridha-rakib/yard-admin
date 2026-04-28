@@ -343,12 +343,20 @@ const PaymentDetails = () => {
                   <span className="font-semibold">${record.serviceAmount.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between py-2">
+                  <span className="text-gray-600">Booking Fee</span>
+                  <span className="font-semibold">${record.bookingFee.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-gray-600">Customer Total</span>
+                  <span className="font-semibold">${record.totalAmount.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between py-2">
                   <span className="text-gray-600">Platform Fee ({platformFeePercentage}%)</span>
                   <span className="font-semibold">-${platformFee.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">Processing Fee</span>
-                  <span className="font-semibold">-${record.processingFee.toFixed(2)}</span>
+                  <span className="text-gray-600">Service Fee retained by YardHero</span>
+                  <span className="font-semibold">${record.bookingFee.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between px-6 py-3 -mx-6 bg-gray-50">
                   <span className="font-semibold">Hero Payout ({payoutPercentage}%)</span>

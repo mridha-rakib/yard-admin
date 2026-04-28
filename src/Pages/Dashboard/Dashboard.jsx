@@ -89,7 +89,7 @@ const Dashboard = () => {
     {
       title: "Platform Earnings",
       value: formatCurrency(dashboard?.totalPlatformFee || 0),
-      change: "Total platform fee collected",
+      change: "Commission plus booking fees collected",
       icon: DollarSign,
       bgColor: "bg-purple-50",
       iconColor: "text-purple-600",
