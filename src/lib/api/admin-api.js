@@ -41,6 +41,8 @@ export const adminApi = {
   listCustomers: (params = {}) =>
     apiClient.get("/admin/customers", { params }).then(unwrapCollection),
   getCustomerById: (customerId) => apiClient.get(`/admin/customers/${customerId}`).then(unwrapData),
+  listTestimonials: (params = {}) =>
+    apiClient.get("/admin/testimonials", { params }).then(unwrapCollection),
   listPayments: (params = {}) =>
     apiClient.get("/admin/payments", { params }).then(unwrapCollectionWithSummary),
   getPaymentById: (paymentId) => apiClient.get(`/payments/${paymentId}`).then(unwrapData),

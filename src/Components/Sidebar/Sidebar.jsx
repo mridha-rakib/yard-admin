@@ -7,6 +7,7 @@ import {
   ChartColumnIncreasing,
   Crown,
   DollarSign,
+  MessageSquareQuote,
   Settings,
   Users,
 } from "lucide-react";
@@ -51,6 +52,12 @@ const Sidebar = ({ closeDrawer }) => {
       label: "Customers",
       Link: "/customers",
       matchPaths: ["/customers", "/customer"],
+    },
+    {
+      icon: <MessageSquareQuote className="w-5 h-5" />,
+      label: "Reviews",
+      Link: "/reviews",
+      matchPaths: ["/reviews"],
     },
     {
       icon: <DollarSign className="w-5 h-5" />,
