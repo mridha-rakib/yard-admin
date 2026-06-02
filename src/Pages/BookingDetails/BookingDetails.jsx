@@ -412,7 +412,7 @@ const BookingDetails = () => {
                       className="overflow-hidden rounded-lg border border-gray-200 bg-gray-50"
                     >
                       <img
-                        src={photo}
+                        src={resolveProofMediaUrl(photo)}
                         alt={`Booking photo ${index + 1}`}
                         className="h-48 w-full object-cover"
                       />
@@ -444,7 +444,7 @@ const BookingDetails = () => {
                         className="overflow-hidden rounded-lg border border-gray-200 bg-gray-50"
                       >
                         <img
-                          src={photo}
+                          src={resolveProofMediaUrl(photo)}
                           alt={`Verification photo ${index + 1}`}
                           className="h-48 w-full object-cover"
                         />
