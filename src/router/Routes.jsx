@@ -1,61 +1,76 @@
+import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router-dom";
-import MainLayout from "../Layout/Main/Main";
-import SignIn from "../Pages/Auth/SignIn/SignIn";
-import ForgatePassword from "../Pages/Auth/ForgatePassword/ForgatePassword";
 import PrivateRoute from "./PrivateRoute";
-import Dashboard from "../Pages/Dashboard/Dashboard";
-import VerifyCode from "../Pages/Auth/VerifyCode/VerifyCode";
-import NewPass from "../Pages/Auth/NewPass/NewPass";
-import Settings from "../Pages/Settings/Settings";
-import Booking from "../Pages/Bookings/Bookings";
-import BookingDetails from "../Pages/BookingDetails/BookingDetails";
-import Workers from "../Pages/Workers/Workers";
-import WorkerDetailsPage from "../Pages/WorkerDetailsPage/WorkerDetailsPage";
-import PaymentDetails from "../Pages/PaymentDetails/PaymentDetails";
-import Payments from "../Pages/Payments/Payments";
-import Customers from "../Pages/Customers/Customers";
-import CustomerDetails from "../Pages/CustomerDetails/CustomerDetails";
-import Support from "../Pages/Support/Support";
-import Pricing from "../Pages/Pricing/Pricing";
-import Testimonials from "../Pages/Testimonials/Testimonials";
+
+const MainLayout = lazy(() => import("../Layout/Main/Main"));
+const SignIn = lazy(() => import("../Pages/Auth/SignIn/SignIn"));
+const ForgatePassword = lazy(() => import("../Pages/Auth/ForgatePassword/ForgatePassword"));
+const VerifyCode = lazy(() => import("../Pages/Auth/VerifyCode/VerifyCode"));
+const NewPass = lazy(() => import("../Pages/Auth/NewPass/NewPass"));
+const Dashboard = lazy(() => import("../Pages/Dashboard/Dashboard"));
+const Settings = lazy(() => import("../Pages/Settings/Settings"));
+const Booking = lazy(() => import("../Pages/Bookings/Bookings"));
+const BookingDetails = lazy(() => import("../Pages/BookingDetails/BookingDetails"));
+const Workers = lazy(() => import("../Pages/Workers/Workers"));
+const WorkerDetailsPage = lazy(() => import("../Pages/WorkerDetailsPage/WorkerDetailsPage"));
+const PaymentDetails = lazy(() => import("../Pages/PaymentDetails/PaymentDetails"));
+const Payments = lazy(() => import("../Pages/Payments/Payments"));
+const Customers = lazy(() => import("../Pages/Customers/Customers"));
+const CustomerDetails = lazy(() => import("../Pages/CustomerDetails/CustomerDetails"));
+const Support = lazy(() => import("../Pages/Support/Support"));
+const Pricing = lazy(() => import("../Pages/Pricing/Pricing"));
+const Testimonials = lazy(() => import("../Pages/Testimonials/Testimonials"));
+
+const RouteFallback = () => (
+  <div className="flex min-h-screen items-center justify-center bg-[#f9fafb]">
+    <p className="text-sm font-medium text-gray-600">Loading...</p>
+  </div>
+);
+
+const loadRoute = (Component) => (
+  <Suspense fallback={<RouteFallback />}>
+    <Component />
+  </Suspense>
+);
+
 export const router = createBrowserRouter([
   {
     path: "/sign-in",
-    element: <SignIn />,
+    element: loadRoute(SignIn),
   },
   {
     path: "/forgate-password",
-    element: <ForgatePassword />,
+    element: loadRoute(ForgatePassword),
   },
   {
     path: "/verify-code",
-    element: <VerifyCode />,
+    element: loadRoute(VerifyCode),
   },
   {
     path: "/new-password",
-    element: <NewPass />,
+    element: loadRoute(NewPass),
   },
   {
     element: <PrivateRoute />,
     children: [
       {
         path: "/",
-        element: <MainLayout />,
+        element: loadRoute(MainLayout),
         children: [
-          { path: "/", element: <Dashboard /> },
-          { path: "/dashboard", element: <Dashboard /> },
-          { path: "/booking", element: <Booking/> },
-          { path: "/booking/:jobId", element: <BookingDetails/> },
-          { path: "/workers", element: <Workers/> },
-          { path: "/workers/:id", element: <WorkerDetailsPage/> },
-          {path: "/payments" , element: <Payments/>},
-          {path: "/payment-details" , element: <PaymentDetails/>},
-          {path: "/customers" , element: <Customers/>},
-          {path: "/customer/:id" , element: <CustomerDetails/>},
-          { path: "/reviews", element: <Testimonials /> },
-          { path: "/pricing", element: <Pricing /> },
-          { path: "/support", element: <Support /> },
-          { path: "/settings", element: <Settings/> },
+          { path: "/", element: loadRoute(Dashboard) },
+          { path: "/dashboard", element: loadRoute(Dashboard) },
+          { path: "/booking", element: loadRoute(Booking) },
+          { path: "/booking/:jobId", element: loadRoute(BookingDetails) },
+          { path: "/workers", element: loadRoute(Workers) },
+          { path: "/workers/:id", element: loadRoute(WorkerDetailsPage) },
+          { path: "/payments", element: loadRoute(Payments) },
+          { path: "/payment-details", element: loadRoute(PaymentDetails) },
+          { path: "/customers", element: loadRoute(Customers) },
+          { path: "/customer/:id", element: loadRoute(CustomerDetails) },
+          { path: "/reviews", element: loadRoute(Testimonials) },
+          { path: "/pricing", element: loadRoute(Pricing) },
+          { path: "/support", element: loadRoute(Support) },
+          { path: "/settings", element: loadRoute(Settings) },
 
         ],
       },

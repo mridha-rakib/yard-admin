@@ -9,7 +9,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "../../Components/ui/button";
+import { Button } from "@/components/ui/button";
 import { adminApi } from "../../lib/api/admin-api";
 import { getApiErrorMessage } from "../../lib/api/http";
 
